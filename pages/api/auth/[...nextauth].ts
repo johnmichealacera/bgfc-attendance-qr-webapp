@@ -5,7 +5,7 @@ import bcrypt from 'bcryptjs'
 
 const prisma = new PrismaClient()
 
-const handler = NextAuth({
+export default NextAuth({
   providers: [
     CredentialsProvider({
       name: 'credentials',
@@ -21,7 +21,7 @@ const handler = NextAuth({
         try {
           const user = await prisma.user.findUnique({
             where: {
-              email: credentials.email
+              email: credentials.email as string
             }
           })
 
@@ -30,7 +30,7 @@ const handler = NextAuth({
           }
 
           const isPasswordValid = await bcrypt.compare(
-            credentials.password,
+            credentials.password as string,
             user.passwordHash
           )
 
@@ -51,7 +51,9 @@ const handler = NextAuth({
       }
     })
   ],
-
+  session: {
+    strategy: 'jwt'
+  },
   callbacks: {
     async jwt({ token, user }: { token: any, user: any }) {
       if (user) {
@@ -73,5 +75,3 @@ const handler = NextAuth({
   },
   secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET,
 })
-
-export { handler as GET, handler as POST }
