@@ -8,6 +8,7 @@ A fullstack QR code-based attendance tracking system for colleges, built with Ne
 - **QR Code Generation**: Each student gets a unique QR code (S<8-digit-ID> format)
 - **QR Code Scanning**: Camera-based scanning with USB scanner support
 - **Attendance Logging**: Real-time attendance tracking with duplicate prevention
+- **Public Access**: QR scanner accessible without login for school gates
 - **Role-based Access**: Admin, Faculty, and Student dashboards
 - **Responsive Design**: Works on desktop and mobile devices
 
@@ -50,6 +51,11 @@ git clone <repository-url>
 cd qr-attendance-system
 npm install
 ```
+
+### 2. Access the System
+
+- **Public QR Scanner**: `/qr-scanner` - No login required, perfect for school gates
+- **Admin Dashboard**: `/` - Login required for full system access
 
 ### 2. Environment Configuration
 

@@ -1,12 +1,9 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { useSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 import { toast } from 'react-hot-toast'
-import Navigation from '@/components/layout/Navigation'
 import QRScanner from '@/components/qr/QRScanner'
-import { Clock, MapPin, User, CheckCircle } from 'lucide-react'
+import { Clock, MapPin, User, CheckCircle, QrCode } from 'lucide-react'
 
 interface AttendanceRecord {
   id: string
@@ -16,26 +13,10 @@ interface AttendanceRecord {
   gateLocation: string
 }
 
-export default function QRScannerPage() {
-  const { data: session } = useSession()
-  const router = useRouter()
+export default function PublicQRScannerPage() {
   const [recentScans, setRecentScans] = useState<AttendanceRecord[]>([])
   const [gateLocation, setGateLocation] = useState('Main Gate')
   const [isProcessing, setIsProcessing] = useState(false)
-  const [isClient, setIsClient] = useState(false)
-
-  useEffect(() => {
-    setIsClient(true)
-  }, [])
-
-  if (!isClient) {
-    return null
-  }
-
-  if (!session) {
-    router.push('/')
-    return null
-  }
 
   const handleQRScan = async (qrData: string) => {
     if (isProcessing) return
@@ -90,10 +71,26 @@ export default function QRScannerPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navigation />
+      {/* Header */}
+      <header className="bg-white shadow-sm border-b border-gray-200">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
+                <QrCode className="w-5 h-5 text-white" />
+              </div>
+              <span className="text-xl font-bold text-gray-900">QR Attendance System</span>
+            </div>
+            <div className="text-sm text-gray-600">
+              Public Access - No Login Required
+            </div>
+          </div>
+        </div>
+      </header>
+
       <main className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">QR Code Scanner</h1>
+        <div className="mb-8 text-center">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">School Gate QR Scanner</h1>
           <p className="text-gray-600">Scan student QR codes to log attendance</p>
         </div>
 
@@ -180,13 +177,28 @@ export default function QRScannerPage() {
 
             {/* Instructions */}
             <div className="card bg-blue-50 border-blue-200">
-              <h3 className="text-lg font-semibold text-blue-900 mb-2">Tips</h3>
+              <h3 className="text-lg font-semibold text-blue-900 mb-2">Instructions</h3>
               <ul className="text-sm text-blue-800 space-y-1">
                 <li>• Ensure good lighting for camera scanning</li>
                 <li>• Hold QR code steady within the frame</li>
                 <li>• USB scanners work in Manual mode</li>
                 <li>• Check gate location before scanning</li>
+                <li>• Students can scan their QR codes</li>
               </ul>
+            </div>
+
+            {/* Admin Access */}
+            <div className="card bg-gray-50 border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Admin Access</h3>
+              <p className="text-sm text-gray-600 mb-3">
+                For administrators and faculty members who need to access the full dashboard:
+              </p>
+              <a 
+                href="/"
+                className="btn-primary w-full text-center block"
+              >
+                Go to Admin Login
+              </a>
             </div>
           </div>
         </div>

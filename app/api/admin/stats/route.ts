@@ -6,9 +6,9 @@ const prisma = new PrismaClient()
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession()
+    const session: any = await getServerSession();
     
-    if (!session || session.user.role !== 'ADMIN') {
+    if (!session || session?.user?.role !== 'ADMIN') {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
     }
 

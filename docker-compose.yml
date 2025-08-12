@@ -24,6 +24,7 @@ services:
       - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/qr_attendance_db
       - NEXTAUTH_SECRET=your-secret-key-here
       - NEXTAUTH_URL=http://localhost:3000
+      - AUTH_SECRET=your-secret-key-here
       - NODE_ENV=development
     depends_on:
       - postgres

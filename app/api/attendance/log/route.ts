@@ -6,11 +6,8 @@ const prisma = new PrismaClient()
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession()
-    
-    if (!session) {
-      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
-    }
+    // Allow public access for attendance logging (no authentication required)
+    // This enables the QR scanner to work at school gates without login
 
     const { qrCode, gateLocation } = await request.json()
 

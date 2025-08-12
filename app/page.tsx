@@ -46,18 +46,32 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-50 to-primary-100">
       <div className="container mx-auto px-4 py-8">
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-primary-600 rounded-full mb-6">
-            <QrCode className="w-10 h-10 text-white" />
+                  <div className="text-center mb-12">
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-primary-600 rounded-full mb-6">
+              <QrCode className="w-10 h-10 text-white" />
+            </div>
+            <h1 className="text-4xl font-bold text-gray-900 mb-4">
+              QR Attendance System
+            </h1>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Streamline college attendance tracking with modern QR technology. 
+              Fast, secure, and efficient for students, faculty, and administrators.
+            </p>
+            
+            {/* Public QR Scanner Access */}
+            <div className="mt-8">
+              <a
+                href="/qr-scanner"
+                className="inline-flex items-center px-6 py-3 bg-success-600 hover:bg-success-700 text-white font-medium rounded-lg transition-colors duration-200"
+              >
+                <QrCode className="w-5 h-5 mr-2" />
+                Access Public QR Scanner
+              </a>
+              <p className="text-sm text-gray-500 mt-2">
+                No login required - Perfect for school gates
+              </p>
+            </div>
           </div>
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            QR Attendance System
-          </h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Streamline college attendance tracking with modern QR technology. 
-            Fast, secure, and efficient for students, faculty, and administrators.
-          </p>
-        </div>
 
         <div className="grid lg:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
           {/* Login Form */}

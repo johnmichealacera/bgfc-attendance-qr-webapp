@@ -30,13 +30,19 @@ export default function StudentDashboard() {
     currentStreak: 0,
     longestStreak: 0,
   })
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
-    fetchStudentStats()
+    // Only fetch stats in browser environment
+    if (typeof window !== 'undefined') {
+      fetchStudentStats()
+    }
   }, [])
 
   const fetchStudentStats = async () => {
+    if (typeof window === 'undefined') return
+    
+    setIsLoading(true)
     try {
       const response = await fetch('/api/student/stats')
       if (response.ok) {

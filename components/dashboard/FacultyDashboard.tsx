@@ -25,13 +25,19 @@ export default function FacultyDashboard() {
     weeklyAttendance: 0,
     monthlyAttendance: 0,
   })
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
-    fetchFacultyStats()
+    // Only fetch stats in browser environment
+    if (typeof window !== 'undefined') {
+      fetchFacultyStats()
+    }
   }, [])
 
   const fetchFacultyStats = async () => {
+    if (typeof window === 'undefined') return
+    
+    setIsLoading(true)
     try {
       const response = await fetch('/api/faculty/stats')
       if (response.ok) {

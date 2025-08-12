@@ -28,13 +28,19 @@ export default function AdminDashboard() {
     totalAttendance: 0,
     todayAttendance: 0,
   })
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
-    fetchDashboardStats()
+    // Only fetch stats in browser environment
+    if (typeof window !== 'undefined') {
+      fetchDashboardStats()
+    }
   }, [])
 
   const fetchDashboardStats = async () => {
+    if (typeof window === 'undefined') return
+    
+    setIsLoading(true)
     try {
       const response = await fetch('/api/admin/stats')
       if (response.ok) {

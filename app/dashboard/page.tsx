@@ -10,7 +10,7 @@ import Navigation from '@/components/layout/Navigation'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 
 export default function DashboardPage() {
-  const { data: session, status } = useSession()
+  const { data: session, status }: any = useSession()
   const router = useRouter()
 
   useEffect(() => {
