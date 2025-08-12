@@ -1,0 +1,74 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         UserRole @default(STUDENT)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  student      Student?
+  faculty      Faculty?
+
+  @@map("users")
+}
+
+model Student {
+  id            String   @id @default(cuid())
+  studentId     String   @unique // S<8-digit-ID> format
+  qrCodeValue   String   @unique
+  qrCodeImageUrl String?
+  userId        String   @unique
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  attendance   Attendance[]
+
+  @@map("students")
+}
+
+model Faculty {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("faculty")
+}
+
+model Attendance {
+  id           String   @id @default(cuid())
+  studentId    String
+  timestamp    DateTime @default(now())
+  gateLocation String?  // Optional gate/location field
+  createdAt    DateTime @default(now())
+
+  // Relations
+  student     Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@map("attendance")
+}
+
+enum UserRole {
+  ADMIN
+  FACULTY
+  STUDENT
+}

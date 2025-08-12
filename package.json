@@ -1,0 +1,52 @@
+{
+  "name": "qr-attendance-system",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:migrate": "prisma migrate dev",
+    "db:seed": "tsx prisma/seed.ts",
+    "db:studio": "prisma studio"
+  },
+  "dependencies": {
+    "next": "14.0.4",
+    "react": "^18",
+    "react-dom": "^18",
+    "next-auth": "^4.24.5",
+    "@auth/prisma-adapter": "^1.0.0",
+    "prisma": "^5.7.1",
+    "@prisma/client": "^5.7.1",
+    "qrcode": "^1.5.3",
+    "html5-qrcode": "^2.3.8",
+    "bcryptjs": "^2.4.3",
+    "csv-stringify": "^6.4.5",
+    "date-fns": "^2.30.0",
+    "lucide-react": "^0.294.0",
+    "react-hot-toast": "^2.4.1"
+  },
+  "devDependencies": {
+    "typescript": "^5",
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/qrcode": "^1.5.5",
+    "tailwindcss": "^3.3.0",
+    "autoprefixer": "^10.0.1",
+    "postcss": "^8",
+    "eslint": "^8",
+    "eslint-config-next": "14.0.4",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "@testing-library/react": "^13.4.0",
+    "@testing-library/jest-dom": "^6.1.5",
+    "tsx": "^4.6.2"
+  }
+}
