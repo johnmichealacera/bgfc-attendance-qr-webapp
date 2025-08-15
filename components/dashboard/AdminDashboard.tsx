@@ -56,25 +56,32 @@ export default function AdminDashboard() {
 
   const quickActions = [
     {
-      title: 'Add New User',
-      description: 'Create new student or faculty accounts',
-      icon: Plus,
-      href: '/dashboard/users/new',
+      title: 'Manage Users',
+      description: 'View, edit, and manage all users',
+      icon: Users,
+      href: '/dashboard/users',
       color: 'bg-primary-500',
+    },
+    {
+      title: 'View Students',
+      description: 'Browse and manage student records',
+      icon: Users,
+      href: '/dashboard/students',
+      color: 'bg-success-500',
     },
     {
       title: 'View Attendance',
       description: 'Browse and export attendance records',
       icon: Clock,
       href: '/dashboard/attendance',
-      color: 'bg-success-500',
+      color: 'bg-warning-500',
     },
     {
       title: 'QR Scanner',
       description: 'Scan student QR codes for attendance',
       icon: QrCode,
       href: '/dashboard/qr-scanner',
-      color: 'bg-warning-500',
+      color: 'bg-info-500',
     },
     {
       title: 'Generate Reports',

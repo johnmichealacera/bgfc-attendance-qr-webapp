@@ -1,20 +1,51 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
+import { getServerSession } from 'next-auth/next'
 
 const prisma = new PrismaClient()
 
 export async function GET(request: NextRequest) {
   try {
-    // TODO: Add proper authentication with getServerSession
-    // TODO: Add proper role-based access control
+    // Check if user is authenticated and is admin
+    const session = await getServerSession()
     
-    // Temporarily return mock data for build testing
+    if (!session) {
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Get today's date range
+    const today = new Date()
+    const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+    const endOfDay = new Date(startOfDay.getTime() + 24 * 60 * 60 * 1000)
+
+    // Fetch statistics
+    const [
+      totalUsers,
+      totalStudents,
+      totalFaculty,
+      totalAttendance,
+      todayAttendance
+    ] = await Promise.all([
+      prisma.user.count(),
+      prisma.student.count(),
+      prisma.faculty.count(),
+      prisma.attendance.count(),
+      prisma.attendance.count({
+        where: {
+          timestamp: {
+            gte: startOfDay,
+            lt: endOfDay,
+          },
+        },
+      }),
+    ])
+
     return NextResponse.json({
-      totalUsers: 25,
-      totalStudents: 20,
-      totalFaculty: 5,
-      totalAttendance: 150,
-      todayAttendance: 18,
+      totalUsers,
+      totalStudents,
+      totalFaculty,
+      totalAttendance,
+      todayAttendance,
     })
 
   } catch (error) {

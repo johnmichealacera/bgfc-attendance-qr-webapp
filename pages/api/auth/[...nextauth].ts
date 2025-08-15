@@ -55,14 +55,14 @@ export default NextAuth({
     strategy: 'jwt'
   },
   callbacks: {
-    async jwt({ token, user }: { token: any, user: any }) {
+    async jwt({ token, user }) {
       if (user) {
         token.role = user.role
         token.id = user.id
       }
       return token
     },
-    async session({ session, token }: { session: any, token: any }) {
+    async session({ session, token }) {
       if (token) {
         session.user.role = token.role
         session.user.id = token.id
@@ -73,5 +73,5 @@ export default NextAuth({
   pages: {
     signIn: '/',
   },
-  secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET,
+  secret: process.env.NEXTAUTH_SECRET || 'your-secret-key-here',
 })
