@@ -17,6 +17,7 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '20')
     const search = searchParams.get('search')
     const year = searchParams.get('year')
+    const course = searchParams.get('course')
 
     const skip = (page - 1) * limit
 
@@ -47,11 +48,21 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    if (course) {
+      where.course = course
+    }
+
     // Fetch students with pagination
     const [students, total] = await Promise.all([
       prisma.student.findMany({
         where,
-        include: {
+        select: {
+          id: true,
+          studentId: true,
+          qrCodeValue: true,
+          qrCodeImageUrl: true,
+          course: true,
+          createdAt: true,
           user: {
             select: {
               name: true,

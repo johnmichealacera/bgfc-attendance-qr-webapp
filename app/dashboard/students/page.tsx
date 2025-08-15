@@ -12,6 +12,7 @@ interface Student {
   studentId: string
   qrCodeValue: string
   qrCodeImageUrl: string | null
+  course: string
   createdAt: string
   user: {
     name: string
@@ -44,6 +45,7 @@ export default function StudentsPage() {
   const [filters, setFilters] = useState({
     search: '',
     year: '',
+    course: '',
   })
 
   useEffect(() => {
@@ -218,13 +220,32 @@ export default function StudentsPage() {
                     <option value="2014">2014</option>
                   </select>
                 </div>
+
+                <div className="relative">
+                  <GraduationCap className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  <select
+                    id="course"
+                    value={filters.course}
+                    onChange={(e) => handleFilterChange('course', e.target.value)}
+                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                  >
+                    <option value="">All Courses</option>
+                    <option value="BEED">BEED</option>
+                    <option value="BSED - English">BSED - English</option>
+                    <option value="BSED - Math">BSED - Math</option>
+                    <option value="BSBA">BSBA</option>
+                    <option value="BSIT">BSIT</option>
+                    <option value="BSE">BSE</option>
+                    <option value="BSCRIM">BSCRIM</option>
+                  </select>
+                </div>
               </div>
             </div>
 
             <div className="flex justify-between items-center mt-4">
               <button
                 onClick={() => {
-                  setFilters({ search: '', year: '' })
+                  setFilters({ search: '', year: '', course: '' })
                   setPagination(prev => ({ ...prev, page: 1 }))
                 }}
                 className="text-sm text-gray-600 hover:text-gray-800"
@@ -269,6 +290,9 @@ export default function StudentsPage() {
                           Student
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Course
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           QR Code
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -294,6 +318,12 @@ export default function StudentsPage() {
                                 {student.user.email}
                               </div>
                             </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                              <GraduationCap className="w-3 h-3 mr-1" />
+                              {student.course}
+                            </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex items-center space-x-3">
