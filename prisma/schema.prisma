@@ -32,6 +32,7 @@ model Student {
   qrCodeValue   String   @unique
   qrCodeImageUrl String?
   course        String   // Student's course (e.g., BSCRIM, BSED - English, BEED, etc.)
+  yearLevel     String   // Student's year level (e.g., 1st Year, 2nd Year, 3rd Year, 4th Year, 5th Year)
   userId        String   @unique
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt

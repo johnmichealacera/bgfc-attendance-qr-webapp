@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { Users, Plus, Edit, Trash2, Search, Filter, Download, UserPlus, Shield, GraduationCap, User } from 'lucide-react'
+import { Users, Plus, Edit, Trash2, Search, Filter, Download, UserPlus, Shield, GraduationCap, User, X } from 'lucide-react'
 import Navigation from '@/components/layout/Navigation'
 import { toast } from 'react-hot-toast'
 
@@ -16,6 +16,7 @@ interface User {
   student?: {
     studentId: string
     qrCodeValue: string
+    course?: string
   }
   faculty?: {
     id: string
@@ -96,38 +97,17 @@ export default function UsersPage() {
 
   const exportUsers = async () => {
     try {
-      const params = new URLSearchParams({
-        limit: '1000', // Export all users
-        ...(filters.search && { search: filters.search }),
-        ...(filters.role && { role: filters.role }),
-      })
-
-      const response = await fetch(`/api/users?${params}`)
+      const response = await fetch('/api/users/export')
       if (response.ok) {
-        const data = await response.json()
-        
-        // Convert to CSV
-        const csvContent = [
-          ['Name', 'Email', 'Role', 'Student ID', 'Department', 'Created Date'],
-          ...data.users.map((user: User) => [
-            user.name,
-            user.email,
-            user.role,
-            user.student?.studentId || '',
-                         user.faculty ? 'Faculty Member' : '',
-            new Date(user.createdAt).toLocaleDateString(),
-          ])
-        ].map(row => row.map((field: any) => `"${field}"`).join(',')).join('\n')
-
-        // Download CSV
-        const blob = new Blob([csvContent], { type: 'text/csv' })
+        const blob = await response.blob()
         const url = window.URL.createObjectURL(blob)
         const a = document.createElement('a')
         a.href = url
-        a.download = `users-${new Date().toISOString().split('T')[0]}.csv`
+        a.download = 'users.csv'
+        document.body.appendChild(a)
         a.click()
         window.URL.revokeObjectURL(url)
-        
+        document.body.removeChild(a)
         toast.success('Users exported successfully')
       } else {
         toast.error('Failed to export users')
@@ -356,6 +336,7 @@ export default function UsersPage() {
                                 <div>
                                   <div><strong>Student ID:</strong> {user.student.studentId}</div>
                                   <div><strong>QR Code:</strong> {user.student.qrCodeValue}</div>
+                                  <div><strong>Course:</strong> {user.student.course || 'N/A'}</div>
                                 </div>
                               )}
                                                              {user.faculty && (
@@ -428,6 +409,321 @@ export default function UsersPage() {
           </div>
         </div>
       </main>
+
+      {/* Create User Modal */}
+      {showCreateModal && (
+        <CreateUserModal
+          onClose={() => setShowCreateModal(false)}
+          onSuccess={() => {
+            setShowCreateModal(false)
+            fetchUsers()
+          }}
+        />
+      )}
+
+      {/* Edit User Modal */}
+      {editingUser && (
+        <EditUserModal
+          user={editingUser}
+          onClose={() => setEditingUser(null)}
+          onSuccess={() => {
+            setEditingUser(null)
+            fetchUsers()
+          }}
+        />
+      )}
+    </div>
+  )
+}
+
+// Create User Modal Component
+function CreateUserModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: () => void }) {
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    role: 'STUDENT' as 'ADMIN' | 'FACULTY' | 'STUDENT',
+    studentId: '',
+    course: 'BEED'
+  })
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsSubmitting(true)
+
+    try {
+      const response = await fetch('/api/users', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      })
+
+      if (response.ok) {
+        toast.success('User created successfully')
+        onSuccess()
+      } else {
+        const error = await response.json()
+        toast.error(error.message || 'Failed to create user')
+      }
+    } catch (error) {
+      console.error('Error creating user:', error)
+      toast.error('Error creating user')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 w-full max-w-md">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-semibold">Create New User</h2>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+            <input
+              type="text"
+              value={formData.name}
+              onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+            <input
+              type="email"
+              value={formData.email}
+              onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+            <input
+              type="password"
+              value={formData.password}
+              onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
+            <select
+              value={formData.role}
+              onChange={(e) => setFormData(prev => ({ ...prev, role: e.target.value as any }))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+            >
+              <option value="STUDENT">Student</option>
+              <option value="FACULTY">Faculty</option>
+              <option value="ADMIN">Admin</option>
+            </select>
+          </div>
+
+          {formData.role === 'STUDENT' && (
+            <>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Student ID</label>
+                <input
+                  type="text"
+                  value={formData.studentId}
+                  onChange={(e) => setFormData(prev => ({ ...prev, studentId: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Course</label>
+                <select
+                  value={formData.course}
+                  onChange={(e) => setFormData(prev => ({ ...prev, course: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                  required
+                >
+                  <option value="BEED">BEED</option>
+                  <option value="BSED - English">BSED - English</option>
+                  <option value="BSED - Math">BSED - Math</option>
+                  <option value="BSBA">BSBA</option>
+                  <option value="BSIT">BSIT</option>
+                  <option value="BSE">BSE</option>
+                  <option value="BSCRIM">BSCRIM</option>
+                </select>
+              </div>
+            </>
+          )}
+
+          <div className="flex justify-end space-x-3 pt-4">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:opacity-50"
+            >
+              {isSubmitting ? 'Creating...' : 'Create User'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
+
+// Edit User Modal Component
+function EditUserModal({ user, onClose, onSuccess }: { user: User; onClose: () => void; onSuccess: () => void }) {
+  const [formData, setFormData] = useState({
+    name: user.name,
+    email: user.email,
+    role: user.role,
+    studentId: user.student?.studentId || '',
+    course: user.student?.course || 'BEED'
+  })
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsSubmitting(true)
+
+    try {
+      const response = await fetch(`/api/users/${user.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      })
+
+      if (response.ok) {
+        toast.success('User updated successfully')
+        onSuccess()
+      } else {
+        const error = await response.json()
+        toast.error(error.message || 'Failed to update user')
+      }
+    } catch (error) {
+      console.error('Error updating user:', error)
+      toast.error('Error updating user')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 w-full max-w-md">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-semibold">Edit User</h2>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+            <input
+              type="text"
+              value={formData.name}
+              onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+            <input
+              type="email"
+              value={formData.email}
+              onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
+            <select
+              value={formData.role}
+              onChange={(e) => setFormData(prev => ({ ...prev, role: e.target.value as any }))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+            >
+              <option value="STUDENT">Student</option>
+              <option value="FACULTY">Faculty</option>
+              <option value="ADMIN">Admin</option>
+            </select>
+          </div>
+
+          {formData.role === 'STUDENT' && (
+            <>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Student ID</label>
+                <input
+                  type="text"
+                  value={formData.studentId}
+                  onChange={(e) => setFormData(prev => ({ ...prev, studentId: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Course</label>
+                <select
+                  value={formData.course}
+                  onChange={(e) => setFormData(prev => ({ ...prev, course: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                  required
+                >
+                  <option value="BEED">BEED</option>
+                  <option value="BSED - English">BSED - English</option>
+                  <option value="BSED - Math">BSED - Math</option>
+                  <option value="BSBA">BSBA</option>
+                  <option value="BSIT">BSIT</option>
+                  <option value="BSE">BSE</option>
+                  <option value="BSCRIM">BSCRIM</option>
+                </select>
+              </div>
+            </>
+          )}
+
+          <div className="flex justify-end space-x-3 pt-4">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:opacity-50"
+            >
+              {isSubmitting ? 'Updating...' : 'Update User'}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   )
 }

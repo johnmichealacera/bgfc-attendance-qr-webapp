@@ -28,6 +28,7 @@ export async function GET(
             studentId: true,
             qrCodeValue: true,
             qrCodeImageUrl: true,
+            course: true,
           },
         },
         faculty: {
@@ -69,7 +70,7 @@ export async function PUT(
       return NextResponse.json({ message: 'Forbidden' }, { status: 403 })
     }
 
-    const { name, email, role, studentId } = await request.json()
+    const { name, email, role, studentId, course } = await request.json()
 
     if (!name || !email || !role) {
       return NextResponse.json(
@@ -113,6 +114,13 @@ export async function PUT(
 
     // Update role-specific records
     if (role === 'STUDENT' && studentId) {
+      if (!course) {
+        return NextResponse.json(
+          { message: 'Course is required for student users' },
+          { status: 400 }
+        )
+      }
+      
       // Delete existing faculty record if any
       await prisma.faculty.deleteMany({
         where: { userId: params.id },
@@ -124,10 +132,12 @@ export async function PUT(
         update: {
           studentId,
           qrCodeValue: studentId,
+          course,
         },
         create: {
           studentId,
           qrCodeValue: studentId,
+          course,
           userId: params.id,
         },
       })

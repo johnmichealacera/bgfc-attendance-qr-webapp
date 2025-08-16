@@ -43,9 +43,7 @@ export async function GET(request: NextRequest) {
     }
     
     if (year) {
-      where.studentId = {
-        startsWith: year,
-      }
+      where.yearLevel = year
     }
 
     if (course) {
@@ -62,6 +60,7 @@ export async function GET(request: NextRequest) {
           qrCodeValue: true,
           qrCodeImageUrl: true,
           course: true,
+          yearLevel: true,
           createdAt: true,
           user: {
             select: {

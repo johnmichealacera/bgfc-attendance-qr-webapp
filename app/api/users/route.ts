@@ -58,6 +58,7 @@ export async function GET(request: NextRequest) {
             select: {
               studentId: true,
               qrCodeValue: true,
+              course: true,
             },
           },
           faculty: {
@@ -107,7 +108,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: 'Forbidden' }, { status: 403 })
     }
 
-    const { name, email, password, role, studentId } = await request.json()
+    const { name, email, password, role, studentId, course } = await request.json()
 
     if (!name || !email || !password || !role) {
       return NextResponse.json(
@@ -144,10 +145,18 @@ export async function POST(request: NextRequest) {
 
     // Create role-specific records
     if (role === 'STUDENT' && studentId) {
+      if (!course) {
+        return NextResponse.json(
+          { message: 'Course is required for student users' },
+          { status: 400 }
+        )
+      }
+      
       await prisma.student.create({
         data: {
           studentId,
           qrCodeValue: studentId,
+          course,
           userId: user.id,
         },
       })

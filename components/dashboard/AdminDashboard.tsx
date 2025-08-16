@@ -63,10 +63,10 @@ export default function AdminDashboard() {
       color: 'bg-primary-500',
     },
     {
-      title: 'View Students',
-      description: 'Browse and manage student records',
+      title: 'View All Students',
+      description: 'Browse and filter all students with course and year information',
       icon: Users,
-      href: '/dashboard/students',
+      href: '/dashboard/all-students',
       color: 'bg-success-500',
     },
     {
@@ -192,7 +192,8 @@ export default function AdminDashboard() {
 
       {/* Recent Activity */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="card">
+        {/* TODO: Analyze if this is needed */}
+        {/* <div className="card">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Attendance</h3>
           <div className="space-y-3">
             <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
@@ -214,7 +215,7 @@ export default function AdminDashboard() {
               </span>
             </div>
           </div>
-        </div>
+        </div> */}
 
         <div className="card">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">System Status</h3>
