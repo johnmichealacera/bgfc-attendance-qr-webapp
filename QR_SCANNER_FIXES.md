@@ -18,9 +18,9 @@ This document outlines the fixes and improvements made to the QR scanner functio
 **Problem**: The scanner accepted any input without proper validation or sanitization.
 
 **Solution**:
-- Added comprehensive QR code validation with the expected format: `S12345678` (S followed by 8 digits)
-- Implemented sanitization to normalize input (trim whitespace, convert to uppercase)
-- Added student ID range validation (10000000-99999999)
+- Added comprehensive QR code validation with the expected format: `2025-0000206` (4-digit year, hyphen, 7-digit number)
+- Implemented sanitization to normalize input (trim whitespace)
+- Added year range validation (2020-2030) and ID number validation (0000001-9999999)
 - Created centralized validation utilities for consistency across all scanner pages
 
 ### 3. Poor Error Handling
@@ -56,14 +56,14 @@ const isNormalScanningError = error.includes('NotFoundException') ||
 ### 2. QR Code Validation
 ```typescript
 export function validateAndSanitizeQR(data: string): QRValidationResult {
-  const cleaned = data.trim().toUpperCase()
-  const qrPattern = /^S\d{8}$/
+  const cleaned = data.trim()
+  const qrPattern = /^\d{4}-\d{7}$/
   
   if (!qrPattern.test(cleaned)) {
     return {
       isValid: false,
       sanitized: cleaned,
-      error: 'Invalid QR code format. Expected format: S12345678'
+      error: 'Invalid QR code format. Expected format: 2025-0000206'
     }
   }
   
@@ -94,9 +94,9 @@ Created a dedicated test page at `/test-qr` that allows users to:
 - Understand the expected QR code format
 
 ### Test Cases
-1. **Valid QR Codes**: S20250001, S12345678, S99999999
-2. **Invalid QR Codes**: S123 (too short), 20250001 (missing S), SABC12345 (letters)
-3. **Edge Cases**: Whitespace, lowercase input, special characters
+1. **Valid QR Codes**: 2025-0000206, 2022-0004018, 2024-0000012
+2. **Invalid QR Codes**: 2025-123 (ID too short), 20250000206 (missing hyphen), 2019-0000206 (year too old)
+3. **Edge Cases**: Whitespace, special characters, wrong format
 
 ## User Experience Improvements
 
@@ -124,7 +124,7 @@ Scanner error: NotFoundException: No MultiFormat Readers were able to detect the
 ### After
 ```
 Normal scanning attempt (no QR code detected): NotFoundException: No MultiFormat Readers were able to detect the code.
-QR Code detected: S20250001
+QR Code detected: 2025-0000206
 ```
 
 ## Usage Instructions

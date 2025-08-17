@@ -18,30 +18,30 @@ export interface QRValidationResult {
  * @returns Validation result with sanitized data and error information
  */
 export function validateAndSanitizeQR(data: string): QRValidationResult {
-  // Remove any whitespace and normalize to uppercase
-  const cleaned = data.trim().toUpperCase()
+  // Remove any whitespace and normalize
+  const cleaned = data.trim()
   
-  // Check for basic format (starts with S followed by 8 digits)
-  const qrPattern = /^S\d{8}$/
+  // Check for basic format (YYYY-NNNNNNN: 4-digit year, hyphen, 7-digit number)
+  const qrPattern = /^\d{4}-\d{7}$/
   
   if (!qrPattern.test(cleaned)) {
     return {
       isValid: false,
       sanitized: cleaned,
-      error: 'Invalid QR code format. Expected format: S12345678'
+      error: 'Invalid QR code format. Expected format: 2025-0000206'
     }
   }
   
-  // Additional validation: check if it's a reasonable student ID
-  const idNumber = cleaned.substring(1) // Remove 'S' prefix
-  const numericId = parseInt(idNumber, 10)
+  // Extract year and ID parts
+  const [, idStr] = cleaned.split('-')
+  const idNumber = parseInt(idStr, 10)
   
-  // Validate student ID range (8-digit numbers from 10000000 to 99999999)
-  if (numericId < 10000000 || numericId > 99999999) {
+  // Validate ID number range (7-digit numbers from 0000001 to 9999999)
+  if (idNumber < 1 || idNumber > 9999999) {
     return {
       isValid: false,
       sanitized: cleaned,
-      error: 'Invalid student ID range. ID must be 8 digits.'
+      error: 'Invalid ID number. Must be 7 digits (0000001-9999999).'
     }
   }
   

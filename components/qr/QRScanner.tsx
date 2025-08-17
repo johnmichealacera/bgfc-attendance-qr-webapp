@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { toast } from 'react-hot-toast'
 import { QrCode, Camera, Keyboard, CheckCircle, RefreshCw, AlertTriangle, Settings } from 'lucide-react'
 import { Html5QrcodeScanner, Html5Qrcode } from 'html5-qrcode'
+import { validateAndSanitizeQR } from '@/utils/qr-validation'
 
 interface QRScannerProps {
   onScan: (data: string) => void
@@ -395,39 +396,7 @@ export default function QRScanner({ onScan, gateLocation = 'Main Gate' }: QRScan
     setCameraError(null)
   }, [])
 
-  // QR Code validation and sanitization
-  const validateAndSanitizeQR = (data: string): { isValid: boolean; sanitized: string; error?: string } => {
-    // Remove any whitespace and normalize
-    const cleaned = data.trim().toUpperCase()
-    
-    // Check for basic format (starts with S followed by 8 digits)
-    const qrPattern = /^S\d{8}$/
-    
-    if (!qrPattern.test(cleaned)) {
-      return {
-        isValid: false,
-        sanitized: cleaned,
-        error: 'Invalid QR code format. Expected format: S12345678'
-      }
-    }
-    
-    // Additional validation: check if it's a reasonable student ID
-    const idNumber = cleaned.substring(1) // Remove 'S' prefix
-    const numericId = parseInt(idNumber, 10)
-    
-    if (numericId < 10000000 || numericId > 99999999) {
-      return {
-        isValid: false,
-        sanitized: cleaned,
-        error: 'Invalid student ID range. ID must be 8 digits.'
-      }
-    }
-    
-    return {
-      isValid: true,
-      sanitized: cleaned
-    }
-  }
+
 
   // Handle scan results
   const handleScan = useCallback(async (data: string) => {
@@ -724,7 +693,7 @@ export default function QRScanner({ onScan, gateLocation = 'Main Gate' }: QRScan
                   type="text"
                   value={manualInput}
                   onChange={handleManualInput}
-                  placeholder="S20250001 or scan with USB scanner"
+                                      placeholder="2025-0000206 or scan with USB scanner"
                   className="input-field text-center text-lg font-mono"
                   autoFocus
                 />
@@ -772,7 +741,7 @@ export default function QRScanner({ onScan, gateLocation = 'Main Gate' }: QRScan
           <ul className="text-sm text-gray-600 space-y-1">
             <li>• <strong>Camera Mode:</strong> Use your device camera to scan QR codes</li>
             <li>• <strong>Manual/USB Mode:</strong> Type QR codes manually or use a USB scanner</li>
-            <li>• QR codes should be in the format: S12345678</li>
+            <li>• QR codes should be in the format: 2025-0000206</li>
             <li>• Ensure good lighting and clear QR code for camera scanning</li>
             <li>• Allow camera permissions when prompted</li>
             <li>• If camera doesn't work, try refreshing the camera list or switching to manual mode</li>

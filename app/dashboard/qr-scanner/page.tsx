@@ -7,6 +7,7 @@ import { QrCode, Camera, CheckCircle, XCircle, MapPin, RefreshCw } from 'lucide-
 import Navigation from '@/components/layout/Navigation'
 import { toast } from 'react-hot-toast'
 import { Html5QrcodeScanner } from 'html5-qrcode'
+import { validateAndSanitizeQR } from '@/utils/qr-validation'
 
 interface ScanResult {
   success: boolean
@@ -240,39 +241,7 @@ export default function QRScannerPage() {
     toast.success('QR Scanner stopped')
   }
 
-  // QR Code validation and sanitization
-  const validateAndSanitizeQR = (data: string): { isValid: boolean; sanitized: string; error?: string } => {
-    // Remove any whitespace and normalize
-    const cleaned = data.trim().toUpperCase()
-    
-    // Check for basic format (starts with S followed by 8 digits)
-    const qrPattern = /^S\d{8}$/
-    
-    if (!qrPattern.test(cleaned)) {
-      return {
-        isValid: false,
-        sanitized: cleaned,
-        error: 'Invalid QR code format. Expected format: S12345678'
-      }
-    }
-    
-    // Additional validation: check if it's a reasonable student ID
-    const idNumber = cleaned.substring(1) // Remove 'S' prefix
-    const numericId = parseInt(idNumber, 10)
-    
-    if (numericId < 10000000 || numericId > 99999999) {
-      return {
-        isValid: false,
-        sanitized: cleaned,
-        error: 'Invalid student ID range. ID must be 8 digits.'
-      }
-    }
-    
-    return {
-      isValid: true,
-      sanitized: cleaned
-    }
-  }
+
 
   const handleScan = async (qrCode: string) => {
     setIsLoading(true)

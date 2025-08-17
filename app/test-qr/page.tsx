@@ -6,18 +6,24 @@ import Link from 'next/link'
 import { toast } from 'react-hot-toast'
 
 export default function TestQRPage() {
-  const [selectedStudentId, setSelectedStudentId] = useState('S20250001')
+  const [selectedStudentId, setSelectedStudentId] = useState('2025-0000206')
   const [customId, setCustomId] = useState('')
   const [copiedToClipboard, setCopiedToClipboard] = useState(false)
 
-  // Sample student IDs for testing
+  // Sample student IDs for testing based on the provided format
   const sampleStudentIds = [
-    'S20250001',
-    'S20250002', 
-    'S20250003',
-    'S20240001',
-    'S20240002',
-    'S20230001'
+    '2025-0000206',
+    '2022-0004018',
+    '2022-0004118',
+    '2023-0000057',
+    '2022-0003945',
+    '2024-0000012',
+    '2022-0004045',
+    '2024-0000119',
+    '2025-0000235',
+    '2023-0000152',
+    '2025-0000078',
+    '2022-0004004'
   ]
 
   const copyToClipboard = async (text: string) => {
@@ -34,9 +40,9 @@ export default function TestQRPage() {
 
   const generateCustomId = () => {
     if (customId.trim()) {
-      const sanitized = customId.trim().toUpperCase()
-      if (!/^S\d{8}$/.test(sanitized)) {
-        toast.error('Invalid format. Use S followed by 8 digits (e.g., S20250001)')
+      const sanitized = customId.trim()
+      if (!/^\d{4}-\d{7}$/.test(sanitized)) {
+        toast.error('Invalid format. Use YYYY-NNNNNNN format (e.g., 2025-0000206)')
         return
       }
       setSelectedStudentId(sanitized)
@@ -129,9 +135,9 @@ export default function TestQRPage() {
                     type="text"
                     value={customId}
                     onChange={(e) => setCustomId(e.target.value)}
-                    placeholder="S20250001"
+                    placeholder="2025-0000206"
                     className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 font-mono"
-                    maxLength={9}
+                    maxLength={12}
                   />
                   <button
                     onClick={generateCustomId}
@@ -142,7 +148,7 @@ export default function TestQRPage() {
                   </button>
                 </div>
                 <p className="text-xs text-gray-500 mt-1">
-                  Format: S followed by 8 digits (e.g., S20250001)
+                  Format: 4-digit year, hyphen, 7-digit number (e.g., 2025-0000206)
                 </p>
               </div>
 
@@ -213,33 +219,33 @@ export default function TestQRPage() {
                 <div className="space-y-3 text-sm">
                   <div className="flex items-center space-x-2">
                     <CheckCircle className="w-4 h-4 text-green-600" />
-                    <span className="text-gray-700">Valid: <code className="bg-gray-100 px-1 rounded">S20250001</code></span>
+                    <span className="text-gray-700">Valid: <code className="bg-gray-100 px-1 rounded">2025-0000206</code></span>
                   </div>
                   <div className="flex items-center space-x-2">
                     <CheckCircle className="w-4 h-4 text-green-600" />
-                    <span className="text-gray-700">Valid: <code className="bg-gray-100 px-1 rounded">S12345678</code></span>
+                    <span className="text-gray-700">Valid: <code className="bg-gray-100 px-1 rounded">2022-0004018</code></span>
                   </div>
                   <div className="flex items-center space-x-2">
                     <CheckCircle className="w-4 h-4 text-green-600" />
-                    <span className="text-gray-700">Valid: <code className="bg-gray-100 px-1 rounded">S99999999</code></span>
+                    <span className="text-gray-700">Valid: <code className="bg-gray-100 px-1 rounded">2024-0000012</code></span>
                   </div>
                   <div className="flex items-center space-x-2">
                     <div className="w-4 h-4 bg-red-100 rounded-full flex items-center justify-center">
                       <span className="w-2 h-0.5 bg-red-600"></span>
                     </div>
-                    <span className="text-gray-700">Invalid: <code className="bg-gray-100 px-1 rounded">S123</code> (too short)</span>
+                    <span className="text-gray-700">Invalid: <code className="bg-gray-100 px-1 rounded">2025-123</code> (ID too short)</span>
                   </div>
                   <div className="flex items-center space-x-2">
                     <div className="w-4 h-4 bg-red-100 rounded-full flex items-center justify-center">
                       <span className="w-2 h-0.5 bg-red-600"></span>
                     </div>
-                    <span className="text-gray-700">Invalid: <code className="bg-gray-100 px-1 rounded">20250001</code> (missing S)</span>
+                    <span className="text-gray-700">Invalid: <code className="bg-gray-100 px-1 rounded">20250000206</code> (missing hyphen)</span>
                   </div>
                   <div className="flex items-center space-x-2">
                     <div className="w-4 h-4 bg-red-100 rounded-full flex items-center justify-center">
                       <span className="w-2 h-0.5 bg-red-600"></span>
                     </div>
-                    <span className="text-gray-700">Invalid: <code className="bg-gray-100 px-1 rounded">SABC12345</code> (letters in number)</span>
+                    <span className="text-gray-700">Invalid: <code className="bg-gray-100 px-1 rounded">2019-0000206</code> (year too old)</span>
                   </div>
                 </div>
               </div>
