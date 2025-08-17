@@ -28,7 +28,7 @@ export function validateAndSanitizeQR(data: string): QRValidationResult {
     return {
       isValid: false,
       sanitized: cleaned,
-      error: `Invalid QR code format. Expected format: ${qrPattern}`
+      error: `Invalid QR code format. Expected format: ${cleaned}`
     }
   }
   
