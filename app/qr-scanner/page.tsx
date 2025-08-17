@@ -252,22 +252,11 @@ export default function PublicQRScannerPage() {
 
       const sanitizedQrCode = validation.sanitized
 
-      // FORCE STOP: Immediately stop scanner and disable scanning
+      // STOP scanning immediately - no more bombardment
       if (isScanning) {
         stopScanning()
       }
       setIsScanning(false)
-
-      // Show immediate feedback that QR was detected and scanner stopped
-      toast.success(`🛑 Scanner STOPPED - QR Code detected: ${sanitizedQrCode}`, {
-        duration: 3000,
-        style: {
-          background: '#DC2626',
-          color: '#FFFFFF',
-          fontSize: '14px',
-          fontWeight: 'bold'
-        }
-      })
 
       const response = await fetch('/api/attendance/log', {
         method: 'POST',
@@ -294,15 +283,6 @@ export default function PublicQRScannerPage() {
         
         setScanResult(successResult)
         setRecentScans(prev => [successResult, ...prev.slice(0, 4)])
-        toast.success(`🎉 Attendance logged successfully for ${result.studentName}!`, {
-          duration: 4000,
-          style: {
-            background: '#10B981',
-            color: '#FFFFFF',
-            fontSize: '16px',
-            fontWeight: 'bold'
-          }
-        })
       } else {
         const errorResult: ScanResult = {
           success: false,
@@ -457,17 +437,17 @@ export default function PublicQRScannerPage() {
                 {/* Scanner Controls */}
                 <div className="flex justify-center gap-4 mb-6">
                   {/* Show restart button when scan result exists */}
-                  {scanResult && !isScanning && (
+                  {scanResult && (
                     <button
                       onClick={() => {
                         setScanResult(null)
                         startScanning()
                       }}
                       disabled={!selectedCameraId}
-                      className="inline-flex items-center px-8 py-4 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-bold rounded-lg transition-colors duration-200 text-lg"
+                      className="inline-flex items-center px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors duration-200"
                     >
-                      <Camera className="w-6 h-6 mr-3" />
-                      🔄 Start Scanning Again
+                      <Camera className="w-5 h-5 mr-2" />
+                      Scan Another ID
                     </button>
                   )}
                   
@@ -611,50 +591,35 @@ export default function PublicQRScannerPage() {
                   </div>
                 </div>
 
-                {/* Scan Result */}
+                {/* Student Data Display */}
                 {scanResult && (
                   <div className="max-w-md mx-auto">
-                    <div className={`p-4 rounded-lg border ${
-                      scanResult.success 
-                        ? 'bg-green-50 border-green-200' 
-                        : 'bg-red-50 border-red-200'
-                    }`}>
-                      <div className="flex items-center mb-2">
-                        {scanResult.success ? (
-                          <CheckCircle className="w-5 h-5 text-green-600 mr-2" />
-                        ) : (
-                          <XCircle className="w-5 h-5 text-red-600 mr-2" />
-                        )}
-                        <span className={`font-medium ${
-                          scanResult.success ? 'text-green-800' : 'text-red-800'
-                        }`}>
-                          {scanResult.success ? 'Success' : 'Error'}
-                        </span>
-                      </div>
-                      
-                      <p className={`text-sm ${
-                        scanResult.success ? 'text-green-700' : 'text-red-700'
-                      }`}>
-                        {scanResult.message}
-                      </p>
-
-                      {scanResult.success && (
-                        <div className="mt-3 space-y-1 text-sm text-green-700">
-                          <p><strong>Student:</strong> {scanResult.studentName}</p>
-                          <p><strong>ID:</strong> {scanResult.studentId}</p>
-                          <p><strong>Time:</strong> {new Date(scanResult.timestamp!).toLocaleString()}</p>
-                          <p><strong>Gate:</strong> {scanResult.gateLocation}</p>
+                    {scanResult.success ? (
+                      <div className="p-6 bg-green-50 border-2 border-green-200 rounded-lg">
+                        <div className="text-center">
+                          <CheckCircle className="w-16 h-16 text-green-600 mx-auto mb-4" />
+                          <h3 className="text-2xl font-bold text-green-900 mb-4">Attendance Logged!</h3>
+                          
+                          <div className="bg-white border border-green-300 rounded-lg p-4 mb-4">
+                            <h4 className="text-lg font-semibold text-gray-900 mb-3">Student Information</h4>
+                            <div className="space-y-2 text-left">
+                              <p><span className="font-medium">Name:</span> {scanResult.studentName}</p>
+                              <p><span className="font-medium">Student ID:</span> {scanResult.studentId}</p>
+                              <p><span className="font-medium">Time:</span> {new Date(scanResult.timestamp!).toLocaleString()}</p>
+                              <p><span className="font-medium">Gate:</span> {scanResult.gateLocation}</p>
+                            </div>
+                          </div>
                         </div>
-                      )}
-
-                      <div className="mt-4 bg-red-50 border border-red-200 rounded-lg p-4">
-                        <p className="text-sm text-red-800 font-medium mb-2">🛑 Scanner STOPPED</p>
-                        <p className="text-xs text-red-600">
-                          Camera has been completely stopped to prevent duplicate scans. 
-                          Use the "Start Scanning Again" button above to scan the next QR code.
-                        </p>
                       </div>
-                    </div>
+                    ) : (
+                      <div className="p-6 bg-red-50 border-2 border-red-200 rounded-lg">
+                        <div className="text-center">
+                          <XCircle className="w-16 h-16 text-red-600 mx-auto mb-4" />
+                          <h3 className="text-xl font-bold text-red-900 mb-2">Error</h3>
+                          <p className="text-red-700">{scanResult.message}</p>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
 

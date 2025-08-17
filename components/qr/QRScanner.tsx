@@ -417,29 +417,13 @@ export default function QRScanner({ onScan, gateLocation = 'Main Gate' }: QRScan
       const sanitizedData = validation.sanitized
       setScannedData(sanitizedData)
 
-      // FORCE STOP: Immediately stop camera and disable scanning
+      // IMMEDIATELY STOP scanning - no more logs
       stopCamera()
       setIsScanning(false)
+      setIsProcessing(false)
 
       // Call the onScan callback with sanitized data
       onScan(sanitizedData)
-      
-      // Show success feedback with longer duration
-      toast.success(`✅ QR Code scanned successfully: ${sanitizedData}`, {
-        duration: 6000, // Increased duration
-        style: {
-          background: '#10B981',
-          color: '#FFFFFF',
-          fontSize: '16px',
-          fontWeight: 'bold'
-        }
-      })
-      
-      // Keep processing state longer and do NOT automatically reset
-      setTimeout(() => {
-        setIsProcessing(false)
-        // Do NOT clear scannedData automatically - user must manually restart
-      }, 5000) // Increased from 3000 to 5000ms
       
     } catch (error) {
       console.error('Error processing QR code:', error)
@@ -667,17 +651,17 @@ export default function QRScanner({ onScan, gateLocation = 'Main Gate' }: QRScan
             
             {/* Camera Controls */}
             <div className="flex justify-center space-x-4">
-              {/* Show "Start Scanning Again" button when a QR was successfully scanned */}
-              {scannedData && !isScanning && (
+              {/* Show simple "Scan Another" button after successful scan */}
+              {scannedData && (
                 <button
                   onClick={() => {
                     setScannedData('')
                     startCamera()
                   }}
-                  disabled={!selectedCameraId || isProcessing}
-                  className="px-6 py-3 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-md text-lg font-bold"
+                  disabled={!selectedCameraId}
+                  className="px-8 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-md text-lg font-medium"
                 >
-                  🔄 Start Scanning Again
+                  Scan Another ID
                 </button>
               )}
               
@@ -756,21 +740,11 @@ export default function QRScanner({ onScan, gateLocation = 'Main Gate' }: QRScan
         {/* Scan Result */}
         {scannedData && (
           <div className="mt-6 p-6 bg-green-50 border-2 border-green-200 rounded-lg">
-            <div className="flex items-center space-x-3 mb-4">
-              <CheckCircle className="w-8 h-8 text-green-600" />
-              <div>
-                <p className="text-lg font-bold text-green-900">✅ QR Code Scanned Successfully!</p>
-                <p className="text-base text-green-700 font-mono bg-white px-2 py-1 rounded border">{scannedData}</p>
-              </div>
-            </div>
-            <div className="bg-green-100 border border-green-300 rounded-lg p-4">
-              <p className="text-sm text-green-800 font-medium mb-2">🛑 Scanner STOPPED - Attendance being processed...</p>
-              <p className="text-xs text-green-600 mb-2">
-                Camera has been completely stopped to prevent duplicate scans.
-              </p>
-              <p className="text-xs text-green-700 font-medium">
-                ⚠️ You must click "Start Scanning Again" button to scan the next QR code.
-              </p>
+            <div className="text-center">
+              <CheckCircle className="w-12 h-12 text-green-600 mx-auto mb-4" />
+              <h3 className="text-xl font-bold text-green-900 mb-2">Student ID Scanned</h3>
+              <p className="text-2xl font-mono text-green-700 bg-white px-4 py-2 rounded border mb-4">{scannedData}</p>
+              <p className="text-sm text-green-600">Attendance processing...</p>
             </div>
           </div>
         )}
