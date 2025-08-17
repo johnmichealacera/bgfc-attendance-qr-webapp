@@ -252,6 +252,22 @@ export default function PublicQRScannerPage() {
 
       const sanitizedQrCode = validation.sanitized
 
+      // Stop scanner immediately after successful QR detection
+      if (isScanning) {
+        stopScanning()
+      }
+
+      // Show immediate feedback that QR was detected
+      toast.success(`✅ QR Code detected: ${sanitizedQrCode}`, {
+        duration: 2000,
+        style: {
+          background: '#3B82F6',
+          color: '#FFFFFF',
+          fontSize: '14px',
+          fontWeight: 'bold'
+        }
+      })
+
       const response = await fetch('/api/attendance/log', {
         method: 'POST',
         headers: {
@@ -277,7 +293,15 @@ export default function PublicQRScannerPage() {
         
         setScanResult(successResult)
         setRecentScans(prev => [successResult, ...prev.slice(0, 4)])
-        toast.success('Attendance logged successfully!')
+        toast.success(`🎉 Attendance logged successfully for ${result.studentName}!`, {
+          duration: 4000,
+          style: {
+            background: '#10B981',
+            color: '#FFFFFF',
+            fontSize: '16px',
+            fontWeight: 'bold'
+          }
+        })
       } else {
         const errorResult: ScanResult = {
           success: false,
@@ -602,12 +626,17 @@ export default function PublicQRScannerPage() {
                         </div>
                       )}
 
-                      <button
-                        onClick={resetScan}
-                        className="mt-3 w-full px-3 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium rounded-md transition-colors duration-200"
-                      >
-                        Scan Another
-                      </button>
+                      <div className="mt-4 space-y-2">
+                        <button
+                          onClick={resetScan}
+                          className="w-full px-4 py-3 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-md transition-colors duration-200"
+                        >
+                          📱 Scan Another QR Code
+                        </button>
+                        <p className="text-xs text-gray-500 text-center">
+                          Camera was paused to prevent duplicate scans
+                        </p>
+                      </div>
                     </div>
                   </div>
                 )}

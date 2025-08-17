@@ -417,24 +417,35 @@ export default function QRScanner({ onScan, gateLocation = 'Main Gate' }: QRScan
       const sanitizedData = validation.sanitized
       setScannedData(sanitizedData)
 
+      // Stop camera immediately after successful scan to prevent multiple scans
+      stopCamera()
+
       // Call the onScan callback with sanitized data
       onScan(sanitizedData)
       
-      // Show success feedback
-      toast.success(`QR Code scanned: ${sanitizedData}`)
+      // Show success feedback with longer duration
+      toast.success(`✅ QR Code scanned successfully: ${sanitizedData}`, {
+        duration: 4000,
+        style: {
+          background: '#10B981',
+          color: '#FFFFFF',
+          fontSize: '16px',
+          fontWeight: 'bold'
+        }
+      })
       
-      // Reset after successful scan
+      // Keep processing state for longer to prevent immediate rescanning
       setTimeout(() => {
         setScannedData('')
         setIsProcessing(false)
-      }, 2000)
+      }, 3000) // Increased from 2000 to 3000ms
       
     } catch (error) {
       console.error('Error processing QR code:', error)
       toast.error('Error processing QR code. Please try again.')
       setIsProcessing(false)
     }
-  }, [isProcessing, onScan])
+  }, [isProcessing, onScan, stopCamera])
 
   // Handle manual input
   const handleManualInput = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -724,13 +735,20 @@ export default function QRScanner({ onScan, gateLocation = 'Main Gate' }: QRScan
 
         {/* Scan Result */}
         {scannedData && (
-          <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-            <div className="flex items-center space-x-3">
-              <CheckCircle className="w-6 h-6 text-success-600" />
+          <div className="mt-6 p-6 bg-green-50 border-2 border-green-200 rounded-lg">
+            <div className="flex items-center space-x-3 mb-4">
+              <CheckCircle className="w-8 h-8 text-green-600" />
               <div>
-                <p className="font-medium text-gray-900">QR Code Scanned Successfully</p>
-                <p className="text-sm text-gray-600 font-mono">{scannedData}</p>
+                <p className="text-lg font-bold text-green-900">✅ QR Code Scanned Successfully!</p>
+                <p className="text-base text-green-700 font-mono bg-white px-2 py-1 rounded border">{scannedData}</p>
               </div>
+            </div>
+            <div className="bg-green-100 border border-green-300 rounded-lg p-4">
+              <p className="text-sm text-green-800 font-medium mb-2">📋 Attendance being processed...</p>
+              <p className="text-xs text-green-600">
+                Camera has been paused to prevent duplicate scans. 
+                Wait for attendance confirmation before scanning another QR code.
+              </p>
             </div>
           </div>
         )}
