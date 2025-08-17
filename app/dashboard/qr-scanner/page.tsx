@@ -262,16 +262,17 @@ export default function QRScannerPage() {
 
       const sanitizedQrCode = validation.sanitized
 
-      // Stop scanner immediately after successful QR detection
+      // FORCE STOP: Immediately stop scanner and disable scanning
       if (isScanning) {
         stopScanning()
       }
+      setIsScanning(false)
 
-      // Show immediate feedback that QR was detected
-      toast.success(`✅ QR Code detected: ${sanitizedQrCode}`, {
-        duration: 2000,
+      // Show immediate feedback that QR was detected and scanner stopped
+      toast.success(`🛑 Scanner STOPPED - QR Code detected: ${sanitizedQrCode}`, {
+        duration: 3000,
         style: {
-          background: '#3B82F6',
+          background: '#DC2626',
           color: '#FFFFFF',
           fontSize: '14px',
           fontWeight: 'bold'
@@ -447,23 +448,43 @@ export default function QRScannerPage() {
 
           {/* Scanner Controls */}
           <div className="flex justify-center gap-4 mb-6">
-            {!isScanning ? (
+            {/* Show restart button when scan result exists */}
+            {scanResult && !isScanning && (
               <button
-                onClick={startScanning}
+                onClick={() => {
+                  setScanResult(null)
+                  startScanning()
+                }}
                 disabled={!selectedCameraId}
-                className="inline-flex items-center px-6 py-3 bg-primary-600 hover:bg-primary-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors duration-200"
+                className="inline-flex items-center px-8 py-4 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-bold rounded-lg transition-colors duration-200 text-lg"
               >
-                <Camera className="w-5 h-5 mr-2" />
-                Start Scanner
+                <Camera className="w-6 h-6 mr-3" />
+                🔄 Start Scanning Again
               </button>
-            ) : (
-              <button
-                onClick={stopScanning}
-                className="inline-flex items-center px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors duration-200"
-              >
-                <XCircle className="w-5 h-5 mr-2" />
-                Stop Scanner
-              </button>
+            )}
+            
+            {/* Regular scanning controls when no scan result */}
+            {!scanResult && (
+              <>
+                {!isScanning ? (
+                  <button
+                    onClick={startScanning}
+                    disabled={!selectedCameraId}
+                    className="inline-flex items-center px-6 py-3 bg-primary-600 hover:bg-primary-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors duration-200"
+                  >
+                    <Camera className="w-5 h-5 mr-2" />
+                    Start Scanner
+                  </button>
+                ) : (
+                  <button
+                    onClick={stopScanning}
+                    className="inline-flex items-center px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors duration-200"
+                  >
+                    <XCircle className="w-5 h-5 mr-2" />
+                    Stop Scanner
+                  </button>
+                )}
+              </>
             )}
           </div>
 
@@ -633,15 +654,11 @@ export default function QRScannerPage() {
                   </div>
                 )}
 
-                <div className="mt-4 space-y-2">
-                  <button
-                    onClick={resetScan}
-                    className="w-full px-4 py-3 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-md transition-colors duration-200"
-                  >
-                    📱 Scan Another QR Code
-                  </button>
-                  <p className="text-xs text-gray-500 text-center">
-                    Camera was paused to prevent duplicate scans
+                <div className="mt-4 bg-red-50 border border-red-200 rounded-lg p-4">
+                  <p className="text-sm text-red-800 font-medium mb-2">🛑 Scanner STOPPED</p>
+                  <p className="text-xs text-red-600">
+                    Camera has been completely stopped to prevent duplicate scans. 
+                    Use the "Start Scanning Again" button above to scan the next QR code.
                   </p>
                 </div>
               </div>
