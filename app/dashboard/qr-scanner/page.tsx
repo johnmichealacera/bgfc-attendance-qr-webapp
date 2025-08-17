@@ -253,9 +253,9 @@ export default function QRScannerPage() {
       if (!validation.isValid) {
         setScanResult({
           success: false,
-          message: validation.error || 'Invalid QR code format',
+          message: validation.error || `Invalid QR code format ${qrCode}`,
         })
-        toast.error(validation.error || 'Invalid QR code format')
+        toast.error(validation.error || `Invalid QR code format ${qrCode}`)
         setIsLoading(false)
         return
       }

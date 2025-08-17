@@ -409,7 +409,7 @@ export default function QRScanner({ onScan, gateLocation = 'Main Gate' }: QRScan
       const validation = validateAndSanitizeQR(data)
       
       if (!validation.isValid) {
-        toast.error(validation.error || 'Invalid QR code format')
+        toast.error(validation.error || `Invalid QR code format ${data}`)
         setIsProcessing(false)
         return
       }

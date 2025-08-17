@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
     // Validate QR code format
     if (!/^S\d{8}$/.test(qrCode)) {
       return NextResponse.json(
-        { message: 'Invalid QR code format' },
+        { message: `Invalid QR code format ${qrCode}` },
         { status: 400 }
       )
     }

@@ -242,10 +242,10 @@ export default function PublicQRScannerPage() {
       if (!validation.isValid) {
         const errorResult: ScanResult = {
           success: false,
-          message: validation.error || 'Invalid QR code format',
+          message: validation.error || `Invalid QR code format ${qrCode}`,
         }
         setScanResult(errorResult)
-        toast.error(validation.error || 'Invalid QR code format')
+        toast.error(validation.error || `Invalid QR code format ${qrCode}`)
         setIsLoading(false)
         return
       }
