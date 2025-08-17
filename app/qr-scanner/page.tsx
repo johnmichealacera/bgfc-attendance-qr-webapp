@@ -27,6 +27,11 @@ export default function PublicQRScannerPage() {
   const [cameraError, setCameraError] = useState<string | null>(null)
   const scannerRef = useRef<Html5QrcodeScanner | null>(null)
   const scannerContainerRef = useRef<HTMLDivElement>(null)
+  
+  // Add state to track if scanner should accept new scans
+  const [scannerActive, setScannerActive] = useState(false)
+  const [lastScannedCode, setLastScannedCode] = useState<string | null>(null)
+  const [lastScanTime, setLastScanTime] = useState<number>(0)
 
   // Get available cameras when component mounts
   useEffect(() => {
@@ -182,8 +187,10 @@ export default function PublicQRScannerPage() {
       )
       
       setIsScanning(true)
+      setScannerActive(true)  // ENABLE scanner to accept scans
       setCameraError(null)
       setScanResult(null)
+      console.log('✅ Scanner started and ACTIVE')
       toast.success('QR Scanner started with selected camera!')
       
     } catch (error) {
@@ -211,6 +218,9 @@ export default function PublicQRScannerPage() {
   }
 
   const stopScanning = () => {
+    console.log('🛑 Stopping scanner completely')
+    setScannerActive(false)  // DISABLE scanner immediately
+    
     if (scannerRef.current) {
       try {
         scannerRef.current.clear()
@@ -234,12 +244,49 @@ export default function PublicQRScannerPage() {
 
 
   const handleScan = async (qrCode: string) => {
-    // Prevent multiple calls if already processing or result exists
+    const currentTime = Date.now()
+    
+    // FIRST LAYER: Check if scanner is active
+    if (!scannerActive) {
+      console.log('Scanner is not active, ignoring scan...')
+      return
+    }
+    
+    // SECOND LAYER: Prevent multiple calls if already processing or result exists
     if (isLoading || scanResult) {
       console.log('Scan already in progress or completed, ignoring...')
       return
     }
     
+    // THIRD LAYER: Debouncing - prevent scanning same code within 1 second
+    if (lastScannedCode === qrCode && currentTime - lastScanTime < 1000) {
+      console.log('Same QR code scanned too quickly, ignoring...')
+      return
+    }
+    
+    // IMMEDIATELY DISABLE SCANNER to prevent any more scans
+    console.log('🛑 IMMEDIATELY DISABLING SCANNER')
+    setScannerActive(false)
+    setIsScanning(false)
+    
+    // Stop the actual scanner hardware
+    if (isScanning && scannerRef.current) {
+      try {
+        scannerRef.current.clear()
+        scannerRef.current = null
+      } catch (error) {
+        console.error('Error force-stopping scanner:', error)
+      }
+    }
+    
+    // Clear the container to be extra sure
+    if (scannerContainerRef.current) {
+      scannerContainerRef.current.innerHTML = ''
+    }
+    
+    // Update tracking variables
+    setLastScannedCode(qrCode)
+    setLastScanTime(currentTime)
     setIsLoading(true)
     
     try {
@@ -258,12 +305,6 @@ export default function PublicQRScannerPage() {
       }
 
       const sanitizedQrCode = validation.sanitized
-
-      // COMPLETELY STOP scanning immediately - no more API calls
-      if (isScanning) {
-        stopScanning()
-      }
-      setIsScanning(false)
 
       const response = await fetch('/api/attendance/log', {
         method: 'POST',
@@ -449,6 +490,8 @@ export default function PublicQRScannerPage() {
                     <button
                       onClick={() => {
                         setScanResult(null)
+                        setLastScannedCode(null)  // Reset debouncing
+                        setLastScanTime(0)
                         startScanning()
                       }}
                       disabled={!selectedCameraId}
