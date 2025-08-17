@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
+import { validateAndSanitizeQR } from '@/utils/qr-validation'
 // import { getServerSession } from 'next-auth'
 
 const prisma = new PrismaClient()
@@ -18,17 +19,20 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Validate QR code format
-    if (!/^S\d{8}$/.test(qrCode)) {
+    // Validate and sanitize QR code format using centralized validation
+    const validation = validateAndSanitizeQR(qrCode)
+    if (!validation.isValid) {
       return NextResponse.json(
-        { message: `Invalid QR code format ${qrCode}` },
+        { message: validation.error || `Invalid QR code format ${qrCode}` },
         { status: 400 }
       )
     }
+    
+    const sanitizedQrCode = validation.sanitized
 
     // Find student by QR code
     const student = await prisma.student.findUnique({
-      where: { qrCodeValue: qrCode },
+      where: { qrCodeValue: sanitizedQrCode },
       include: {
         user: {
           select: {

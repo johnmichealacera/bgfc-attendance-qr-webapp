@@ -18,7 +18,7 @@ export interface QRValidationResult {
  * @returns Validation result with sanitized data and error information
  */
 export function validateAndSanitizeQR(data: string): QRValidationResult {
-  // Remove any whitespace and normalize
+    // Remove any whitespace and normalize
   const cleaned = data.trim()
   
   // Check for basic format (YYYY-NNNNNNN: 4-digit year, hyphen, 7-digit number)
