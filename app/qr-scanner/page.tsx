@@ -227,12 +227,19 @@ export default function PublicQRScannerPage() {
     
     setIsScanning(false)
     setCameraError(null)
-    toast.success('QR Scanner stopped')
+    // Removed toast to prevent bombardment
+    // toast.success('QR Scanner stopped')
   }
 
 
 
   const handleScan = async (qrCode: string) => {
+    // Prevent multiple calls if already processing or result exists
+    if (isLoading || scanResult) {
+      console.log('Scan already in progress or completed, ignoring...')
+      return
+    }
+    
     setIsLoading(true)
     
     try {
@@ -252,7 +259,7 @@ export default function PublicQRScannerPage() {
 
       const sanitizedQrCode = validation.sanitized
 
-      // STOP scanning immediately - no more bombardment
+      // COMPLETELY STOP scanning immediately - no more API calls
       if (isScanning) {
         stopScanning()
       }
@@ -289,7 +296,8 @@ export default function PublicQRScannerPage() {
           message: result.message || 'Failed to log attendance',
         }
         setScanResult(errorResult)
-        toast.error(result.message || 'Failed to log attendance')
+        // Comment out the "already logged" toast to stop bombardment
+        // toast.error(result.message || 'Failed to log attendance')
       }
     } catch (error) {
       console.error('Error logging attendance:', error)

@@ -400,7 +400,11 @@ export default function QRScanner({ onScan, gateLocation = 'Main Gate' }: QRScan
 
   // Handle scan results
   const handleScan = useCallback(async (data: string) => {
-    if (isProcessing) return
+    // Prevent multiple calls if already processing or scan result exists
+    if (isProcessing || scannedData) {
+      console.log('Scan already in progress or completed, ignoring...')
+      return
+    }
     
     setIsProcessing(true)
     
@@ -417,7 +421,7 @@ export default function QRScanner({ onScan, gateLocation = 'Main Gate' }: QRScan
       const sanitizedData = validation.sanitized
       setScannedData(sanitizedData)
 
-      // IMMEDIATELY STOP scanning - no more logs
+      // IMMEDIATELY STOP scanning completely - no more API calls
       stopCamera()
       setIsScanning(false)
       setIsProcessing(false)
@@ -430,7 +434,7 @@ export default function QRScanner({ onScan, gateLocation = 'Main Gate' }: QRScan
       toast.error('Error processing QR code. Please try again.')
       setIsProcessing(false)
     }
-  }, [isProcessing, onScan, stopCamera])
+  }, [isProcessing, scannedData, onScan, stopCamera])
 
   // Handle manual input
   const handleManualInput = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
