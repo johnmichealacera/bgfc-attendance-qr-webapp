@@ -34,14 +34,22 @@ export function validateAndSanitizeQR(data: string): QRValidationResult {
   
   // Extract year and ID parts
   const [, idStr] = cleaned.split('-')
-  const idNumber = parseInt(idStr, 10)
   
-  // Validate ID number range (7-digit numbers from 0000001 to 9999999)
-  if (idNumber < 1 || idNumber > 9999999) {
+  // Validate ID string length (should be exactly 7 digits)
+  if (idStr.length !== 7) {
     return {
       isValid: false,
       sanitized: cleaned,
-      error: 'Invalid ID number. Must be 7 digits (0000001-9999999).'
+      error: 'Invalid ID number. Must be exactly 7 digits.'
+    }
+  }
+  
+  // Validate that ID contains only digits
+  if (!/^\d{7}$/.test(idStr)) {
+    return {
+      isValid: false,
+      sanitized: cleaned,
+      error: 'Invalid ID number. Must contain only digits.'
     }
   }
   
