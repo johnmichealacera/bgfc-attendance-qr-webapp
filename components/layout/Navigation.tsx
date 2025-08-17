@@ -14,7 +14,8 @@ import {
   Menu, 
   X,
   User,
-  Download
+  Download,
+  TestTube
 } from 'lucide-react'
 import Link from 'next/link'
 
@@ -37,6 +38,7 @@ export default function Navigation() {
           { href: '/dashboard/all-students', label: 'All Students', icon: Download },
           { href: '/dashboard/attendance', label: 'Attendance Records', icon: Clock },
           { href: '/dashboard/qr-scanner', label: 'QR Scanner', icon: QrCode },
+          { href: '/test-qr', label: 'Test QR Codes', icon: TestTube },
         ]
       case 'FACULTY':
         return [

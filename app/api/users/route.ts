@@ -157,6 +157,7 @@ export async function POST(request: NextRequest) {
           studentId,
           qrCodeValue: studentId,
           course,
+          yearLevel: '1st Year', // Default year level
           userId: user.id,
         },
       })

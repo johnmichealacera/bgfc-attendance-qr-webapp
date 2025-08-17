@@ -94,6 +94,8 @@ async function main() {
         studentId: studentData.studentId,
         qrCodeValue,
         qrCodeImageUrl,
+        course: 'BSCRIM', // Default course
+        yearLevel: '1st Year', // Default year level
         userId: user.id,
       },
     })

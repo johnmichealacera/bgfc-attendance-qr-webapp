@@ -138,6 +138,7 @@ export async function PUT(
           studentId,
           qrCodeValue: studentId,
           course,
+          yearLevel: '1st Year', // Default year level
           userId: params.id,
         },
       })
