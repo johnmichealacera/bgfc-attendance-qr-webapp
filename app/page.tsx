@@ -47,8 +47,12 @@ export default function HomePage() {
     <div className="min-h-screen bg-gradient-to-br from-primary-50 to-primary-100">
       <div className="container mx-auto px-4 py-8">
                   <div className="text-center mb-12">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-primary-600 rounded-full mb-6">
-              <QrCode className="w-10 h-10 text-white" />
+            <div className="inline-flex items-center justify-center mb-6">
+              <img 
+                src="/bgfc-logo.png" 
+                alt="School Logo" 
+                className="w-24 h-24 object-contain"
+              />
             </div>
             <h1 className="text-4xl font-bold text-gray-900 mb-4">
               QR Attendance System

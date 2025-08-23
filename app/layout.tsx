@@ -9,6 +9,11 @@ const inter = Inter({ subsets: ['latin'] })
 export const metadata: Metadata = {
   title: 'QR Attendance System',
   description: 'College attendance tracking system using QR codes',
+  icons: {
+    icon: '/bgfc-logo.png',
+    shortcut: '/bgfc-logo.png',
+    apple: '/bgfc-logo.png',
+  },
 }
 
 export default function RootLayout({
