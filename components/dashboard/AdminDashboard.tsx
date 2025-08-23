@@ -55,13 +55,13 @@ export default function AdminDashboard() {
   }
 
   const quickActions = [
-    {
-      title: 'Manage Users',
-      description: 'View, edit, and manage all users',
-      icon: Users,
-      href: '/dashboard/users',
-      color: 'bg-primary-500',
-    },
+    // {
+    //   title: 'Manage Users',
+    //   description: 'View, edit, and manage all users',
+    //   icon: Users,
+    //   href: '/dashboard/users',
+    //   color: 'bg-primary-500',
+    // },
     {
       title: 'View All Students',
       description: 'Browse and filter all students with course and year information',

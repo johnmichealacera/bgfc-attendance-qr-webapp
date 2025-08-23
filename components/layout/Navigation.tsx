@@ -34,7 +34,7 @@ export default function Navigation() {
       case 'ADMIN':
         return [
           { href: '/dashboard', label: 'Dashboard', icon: BarChart3 },
-          { href: '/dashboard/users', label: 'Manage Users', icon: Users },
+          // { href: '/dashboard/users', label: 'Manage Users', icon: Users },
           { href: '/dashboard/all-students', label: 'All Students', icon: Download },
           { href: '/dashboard/attendance', label: 'Attendance Records', icon: Clock },
           { href: '/dashboard/qr-scanner', label: 'QR Scanner', icon: QrCode },
