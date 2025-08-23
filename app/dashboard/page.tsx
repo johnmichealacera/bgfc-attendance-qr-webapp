@@ -35,8 +35,8 @@ export default function DashboardPage() {
     switch (session.user.role) {
       case 'ADMIN':
         return <AdminDashboard />
-      case 'FACULTY':
-        return <FacultyDashboard />
+      // case 'FACULTY':
+      //   return <FacultyDashboard />
       case 'STUDENT':
         return <StudentDashboard />
       default:

@@ -143,7 +143,7 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        <div className="card">
+        {/* <div className="card">
           <div className="flex items-center">
             <div className="p-3 bg-warning-100 rounded-lg">
               <Users className="w-6 h-6 text-warning-600" />
@@ -153,7 +153,7 @@ export default function AdminDashboard() {
               <p className="text-2xl font-bold text-gray-900">{stats.totalFaculty}</p>
             </div>
           </div>
-        </div>
+        </div> */}
 
         <div className="card">
           <div className="flex items-center">

@@ -188,7 +188,7 @@ export default function PublicQRScannerPage() {
         </div>
 
         {/* Gate Location Selector */}
-        <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
+        {/* <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
           <div className="flex items-center mb-3">
             <MapPin className="w-5 h-5 text-blue-600 mr-2" />
             <label className="text-sm font-medium text-gray-700">Gate Location</label>
@@ -203,7 +203,7 @@ export default function PublicQRScannerPage() {
             <option value="Back Gate">Back Gate</option>
             <option value="Emergency Exit">Emergency Exit</option>
           </select>
-        </div>
+        </div> */}
 
         {/* Scanner Section */}
         <div className="bg-white rounded-xl shadow-sm p-6 mb-6">

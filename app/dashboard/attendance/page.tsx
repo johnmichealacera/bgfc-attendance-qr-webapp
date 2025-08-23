@@ -199,7 +199,7 @@ export default function AttendancePage() {
                 </div>
               </div>
 
-              <div>
+              {/* <div>
                 <label htmlFor="gateLocation" className="block text-sm font-medium text-gray-700 mb-2">
                   Gate Location
                 </label>
@@ -219,7 +219,7 @@ export default function AttendancePage() {
                     <option value="Student Entrance">Student Entrance</option>
                   </select>
                 </div>
-              </div>
+              </div> */}
             </div>
 
             <div className="flex justify-between items-center mt-4">
@@ -269,9 +269,9 @@ export default function AttendancePage() {
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Student
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        {/* <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Gate Location
-                        </th>
+                        </th> */}
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Timestamp
                         </th>
