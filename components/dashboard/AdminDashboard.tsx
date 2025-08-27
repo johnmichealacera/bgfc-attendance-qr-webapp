@@ -78,7 +78,7 @@ export default function AdminDashboard() {
     },
     {
       title: 'QR Scanner',
-      description: 'Scan student QR codes for attendance',
+      description: 'Advanced scanner with morning/afternoon session tracking',
       icon: QrCode,
       href: '/dashboard/qr-scanner',
       color: 'bg-info-500',

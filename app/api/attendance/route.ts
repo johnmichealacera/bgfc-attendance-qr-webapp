@@ -1,8 +1,103 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
 import { getServerSession } from 'next-auth/next'
+import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
+
+export async function POST(request: NextRequest) {
+  try {
+    const session = await getServerSession()
+    
+    if (!session) {
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Only faculty and admins can record attendance
+    if (session.user.role !== 'FACULTY' && session.user.role !== 'ADMIN') {
+      return NextResponse.json({ message: 'Forbidden' }, { status: 403 })
+    }
+
+    const body = await request.json()
+    const { studentId, sessionType, gateLocation, notes } = body
+
+    if (!studentId || !sessionType) {
+      return NextResponse.json({ message: 'Missing required fields' }, { status: 400 })
+    }
+
+    // Validate session type
+    const validSessionTypes = ['MORNING_IN', 'MORNING_OUT', 'AFTERNOON_IN', 'AFTERNOON_OUT']
+    if (!validSessionTypes.includes(sessionType)) {
+      return NextResponse.json({ message: 'Invalid session type' }, { status: 400 })
+    }
+
+    // Get today's date (start of day)
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+
+    // Check if attendance already exists for this student, session type, and date
+    const existingAttendance = await prisma.attendance.findFirst({
+      where: {
+        studentId,
+        sessionType,
+        sessionDate: {
+          gte: today,
+          lt: new Date(today.getTime() + 24 * 60 * 60 * 1000) // Next day
+        }
+      }
+    })
+
+    if (existingAttendance) {
+      return NextResponse.json({ 
+        message: `Attendance already recorded for ${sessionType} today` 
+      }, { status: 409 })
+    }
+
+    // Create attendance record
+    const attendance = await prisma.attendance.create({
+      data: {
+        studentId,
+        sessionType,
+        sessionDate: today,
+        gateLocation: gateLocation || null,
+        notes: notes || null,
+        timestamp: new Date()
+      },
+      include: {
+        student: {
+          include: {
+            user: {
+              select: {
+                name: true,
+                email: true
+              }
+            }
+          }
+        }
+      }
+    })
+
+    return NextResponse.json({
+      success: true,
+      message: 'Attendance recorded successfully',
+      attendance: {
+        id: attendance.id,
+        studentId: attendance.student.studentId,
+        studentName: attendance.student.user.name,
+        sessionType: attendance.sessionType,
+        timestamp: attendance.timestamp,
+        gateLocation: attendance.gateLocation,
+        notes: attendance.notes
+      }
+    })
+
+  } catch (error) {
+    console.error('Error recording attendance:', error)
+    return NextResponse.json(
+      { message: 'Error recording attendance' },
+      { status: 500 }
+    )
+  }
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -15,8 +110,9 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '20')
-    const studentId = searchParams.get('studentId')
+    const search = searchParams.get('search')
     const date = searchParams.get('date')
+    const sessionType = searchParams.get('sessionType')
     const gateLocation = searchParams.get('gateLocation')
 
     const skip = (page - 1) * limit
@@ -24,145 +120,97 @@ export async function GET(request: NextRequest) {
     // Build where clause
     const where: any = {}
     
-    if (studentId) {
-      where.student = {
-        studentId: studentId
-      }
-    }
-    
-    if (date) {
-      const startDate = new Date(date)
-      const endDate = new Date(startDate.getTime() + 24 * 60 * 60 * 1000)
-      where.timestamp = {
-        gte: startDate,
-        lt: endDate,
-      }
-    }
-    
-    if (gateLocation) {
-      where.gateLocation = gateLocation
-    }
-
-    // Fetch attendance records with pagination
-    const [attendance, total] = await Promise.all([
-      prisma.attendance.findMany({
-        where,
-        include: {
+    if (search) {
+      where.OR = [
+        {
           student: {
-            include: {
-              user: {
-                select: {
-                  name: true,
-                  email: true,
-                },
+            user: {
+              name: {
+                contains: search,
+                mode: 'insensitive',
               },
             },
           },
         },
-        orderBy: {
-          timestamp: 'desc',
+        {
+          student: {
+            studentId: {
+              contains: search,
+            },
+          },
         },
-        skip,
-        take: limit,
-      }),
-      prisma.attendance.count({ where }),
-    ])
-
-    return NextResponse.json({
-      attendance,
-      pagination: {
-        page,
-        limit,
-        total,
-        pages: Math.ceil(total / limit),
-      },
-    })
-
-  } catch (error) {
-    console.error('Error fetching attendance:', error)
-    return NextResponse.json(
-      { message: 'Internal server error' },
-      { status: 500 }
-    )
-  }
-}
-
-export async function POST(request: NextRequest) {
-  try {
-    const session = await getServerSession()
+      ]
+    }
     
-    if (!session) {
-      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
+    if (date) {
+      const startDate = new Date(date)
+      startDate.setHours(0, 0, 0, 0)
+      const endDate = new Date(startDate.getTime() + 24 * 60 * 60 * 1000)
+      
+      where.sessionDate = {
+        gte: startDate,
+        lt: endDate
+      }
     }
 
-    const { studentId, gateLocation, timestamp } = await request.json()
-
-    if (!studentId || !gateLocation) {
-      return NextResponse.json(
-        { message: 'Student ID and gate location are required' },
-        { status: 400 }
-      )
+    if (sessionType) {
+      where.sessionType = sessionType
     }
 
-    // Find student
-    const student = await prisma.student.findUnique({
-      where: { studentId },
-    })
-
-    if (!student) {
-      return NextResponse.json(
-        { message: 'Student not found' },
-        { status: 404 }
-      )
+    if (gateLocation) {
+      where.gateLocation = gateLocation
     }
 
-    // Check for duplicate attendance within 5 minutes
-    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000)
-    const existingAttendance = await prisma.attendance.findFirst({
-      where: {
-        studentId: student.id,
-        timestamp: {
-          gte: fiveMinutesAgo,
-        },
-      },
-    })
+    // Get total count
+    const total = await prisma.attendance.count({ where })
 
-    if (existingAttendance) {
-      return NextResponse.json(
-        { message: 'Attendance already logged within the last 5 minutes' },
-        { status: 409 }
-      )
-    }
-
-    // Create attendance record
-    const attendance = await prisma.attendance.create({
-      data: {
-        studentId: student.id,
-        gateLocation,
-        timestamp: timestamp ? new Date(timestamp) : new Date(),
-      },
+    // Get attendance records
+    const attendance = await prisma.attendance.findMany({
+      where,
       include: {
         student: {
           include: {
             user: {
               select: {
                 name: true,
-              },
-            },
-          },
-        },
+                email: true
+              }
+            }
+          }
+        }
       },
+      orderBy: {
+        timestamp: 'desc'
+      },
+      skip,
+      take: limit
     })
 
+    const pages = Math.ceil(total / limit)
+
     return NextResponse.json({
-      message: 'Attendance logged successfully',
-      attendance,
+      attendance: attendance.map(record => ({
+        id: record.id,
+        studentId: record.student.studentId,
+        studentName: record.student.user.name,
+        studentEmail: record.student.user.email,
+        sessionType: record.sessionType,
+        timestamp: record.timestamp,
+        gateLocation: record.gateLocation,
+        notes: record.notes
+      })),
+      pagination: {
+        page,
+        limit,
+        total,
+        pages
+      }
     })
 
   } catch (error) {
-    console.error('Error creating attendance:', error)
+    console.error('Error fetching attendance:', error)
     return NextResponse.json(
-      { message: 'Internal server error' },
+      { message: 'Error fetching attendance records' },
       { status: 500 }
     )
   }

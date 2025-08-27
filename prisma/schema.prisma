@@ -35,7 +35,7 @@ model Student {
   yearLevel     String   // Student's year level (e.g., 1st Year, 2nd Year, 3rd Year, 4th Year, 5th Year)
   userId        String   @unique
   createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  updatedAt    DateTime @updatedAt
 
   // Relations
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -57,15 +57,20 @@ model Faculty {
 }
 
 model Attendance {
-  id           String   @id @default(cuid())
+  id           String        @id @default(cuid())
   studentId    String
-  timestamp    DateTime @default(now())
-  gateLocation String?  // Optional gate/location field
-  createdAt    DateTime @default(now())
+  timestamp    DateTime      @default(now())
+  sessionType  SessionType   // MORNING_IN, MORNING_OUT, AFTERNOON_IN, AFTERNOON_OUT
+  sessionDate  DateTime      @default(now()) // Date part only for grouping
+  gateLocation String?       // Optional gate/location field
+  notes        String?       // Optional notes (late arrival, early departure, etc.)
+  createdAt    DateTime      @default(now())
 
   // Relations
-  student     Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  student     Student        @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
+  // Composite unique constraint to prevent duplicate entries for same session
+  @@unique([studentId, sessionType, sessionDate])
   @@map("attendance")
 }
 
@@ -73,4 +78,11 @@ enum UserRole {
   ADMIN
   FACULTY
   STUDENT
+}
+
+enum SessionType {
+  MORNING_IN      // Morning arrival
+  MORNING_OUT     // Morning departure
+  AFTERNOON_IN    // Afternoon arrival
+  AFTERNOON_OUT   // Afternoon departure
 }
