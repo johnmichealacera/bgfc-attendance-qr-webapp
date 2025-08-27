@@ -137,14 +137,15 @@ export default function HomePage() {
               </button>
             </form>
 
-            <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+{/* Hide Demo Accounts */}
+            {/* <div className="mt-6 p-4 bg-gray-50 rounded-lg">
               <h3 className="font-medium text-gray-900 mb-2">Demo Accounts:</h3>
               <div className="text-sm text-gray-600 space-y-1">
                 <p><strong>Admin:</strong> admin@college.edu / admin123</p>
                 <p><strong>Faculty:</strong> prof.smith@college.edu / faculty123</p>
                 <p><strong>Student:</strong> alice.johnson@college.edu / student123</p>
               </div>
-            </div>
+            </div> */}
           </div>
 
           {/* Features */}

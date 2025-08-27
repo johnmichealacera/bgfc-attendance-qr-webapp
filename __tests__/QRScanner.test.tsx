@@ -1,5 +1,5 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
-import QRScanner from '@/components/qr/QRScanner'
+import EnhancedQRScanner from '@/components/dashboard/EnhancedQRScanner'
 
 // Mock the toast function
 jest.mock('react-hot-toast', () => ({
@@ -7,80 +7,70 @@ jest.mock('react-hot-toast', () => ({
   success: jest.fn(),
 }))
 
-describe('QRScanner Component', () => {
-  const mockOnScan = jest.fn()
+// Mock next-auth
+jest.mock('next-auth/react', () => ({
+  useSession: () => ({
+    data: { user: { email: 'test@example.com' } },
+    status: 'authenticated'
+  })
+}))
 
+// Mock next/navigation
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: jest.fn()
+  })
+}))
+
+describe('EnhancedQRScanner Component', () => {
   beforeEach(() => {
     jest.clearAllMocks()
   })
 
-  it('renders QR scanner with camera and manual modes', () => {
-    render(<QRScanner onScan={mockOnScan} />)
+  it('renders enhanced QR scanner with session configuration', () => {
+    render(<EnhancedQRScanner />)
     
-    expect(screen.getByText('QR Code Scanner')).toBeInTheDocument()
-    expect(screen.getByText('Camera')).toBeInTheDocument()
-    expect(screen.getByText('Manual/USB')).toBeInTheDocument()
+    expect(screen.getByText('Enhanced QR Attendance Scanner')).toBeInTheDocument()
+    expect(screen.getByText('Session Configuration')).toBeInTheDocument()
+    expect(screen.getByText('Morning In')).toBeInTheDocument()
+    expect(screen.getByText('Morning Out')).toBeInTheDocument()
+    expect(screen.getByText('Afternoon In')).toBeInTheDocument()
+    expect(screen.getByText('Afternoon Out')).toBeInTheDocument()
   })
 
-  it('switches to manual mode when manual button is clicked', () => {
-    render(<QRScanner onScan={mockOnScan} />)
+  it('displays gate location selector', () => {
+    render(<EnhancedQRScanner />)
     
-    const manualButton = screen.getByText('Manual/USB')
-    fireEvent.click(manualButton)
-    
-    expect(screen.getByText('Enter QR Code or Scan with USB Scanner')).toBeInTheDocument()
-    expect(screen.getByPlaceholderText('S20250001 or scan with USB scanner')).toBeInTheDocument()
+    expect(screen.getByText('Gate Location')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('Main Gate')).toBeInTheDocument()
   })
 
-  it('shows USB scanner instructions in manual mode', () => {
-    render(<QRScanner onScan={mockOnScan} />)
+  it('shows notes input field', () => {
+    render(<EnhancedQRScanner />)
     
-    const manualButton = screen.getByText('Manual/USB')
-    fireEvent.click(manualButton)
-    
-    expect(screen.getByText('USB Scanner Support')).toBeInTheDocument()
-    expect(screen.getByText(/Connect a USB QR scanner/)).toBeInTheDocument()
+    expect(screen.getByText('Notes (Optional)')).toBeInTheDocument()
+    expect(screen.getByPlaceholderText('Late arrival, early departure, etc.')).toBeInTheDocument()
   })
 
-  it('displays gate location when provided', () => {
-    render(<QRScanner onScan={mockOnScan} gateLocation="Side Gate" />)
+  it('displays scanner controls', () => {
+    render(<EnhancedQRScanner />)
     
-    expect(screen.getByText('Side Gate')).toBeInTheDocument()
+    expect(screen.getByText('Start Scanner')).toBeInTheDocument()
   })
 
-  it('shows instructions for both scanning modes', () => {
-    render(<QRScanner onScan={mockOnScan} />)
+  it('shows recent scans section', () => {
+    render(<EnhancedQRScanner />)
     
-    expect(screen.getByText('Instructions')).toBeInTheDocument()
-    expect(screen.getByText(/Camera Mode/)).toBeInTheDocument()
-    expect(screen.getByText(/Manual\/USB Mode/)).toBeInTheDocument()
+    expect(screen.getByText('Recent Scans')).toBeInTheDocument()
+    expect(screen.getByText('Download CSV')).toBeInTheDocument()
   })
 
-  it('has proper form elements in manual mode', () => {
-    render(<QRScanner onScan={mockOnScan} />)
+  it('displays session time ranges', () => {
+    render(<EnhancedQRScanner />)
     
-    const manualButton = screen.getByText('Manual/USB')
-    fireEvent.click(manualButton)
-    
-    const input = screen.getByPlaceholderText('S20250001 or scan with USB scanner')
-    const submitButton = screen.getByText('Submit QR Code')
-    
-    expect(input).toBeInTheDocument()
-    expect(submitButton).toBeInTheDocument()
-    expect(submitButton).toBeDisabled() // Initially disabled when no input
-  })
-
-  it('enables submit button when manual input is provided', () => {
-    render(<QRScanner onScan={mockOnScan} />)
-    
-    const manualButton = screen.getByText('Manual/USB')
-    fireEvent.click(manualButton)
-    
-    const input = screen.getByPlaceholderText('S20250001 or scan with USB scanner')
-    const submitButton = screen.getByText('Submit QR Code')
-    
-    fireEvent.change(input, { target: { value: 'S20250001' } })
-    
-    expect(submitButton).not.toBeDisabled()
+    expect(screen.getByText('6:00 AM - 8:00 AM')).toBeInTheDocument()
+    expect(screen.getByText('11:30 AM - 12:30 PM')).toBeInTheDocument()
+    expect(screen.getByText('12:30 PM - 2:00 PM')).toBeInTheDocument()
+    expect(screen.getByText('4:30 PM - 6:00 PM')).toBeInTheDocument()
   })
 })
