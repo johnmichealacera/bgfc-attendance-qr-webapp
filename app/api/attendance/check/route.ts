@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url)
     const studentId = searchParams.get('studentId')
-    const sessionType = searchParams.get('sessionType')
+    const sessionType: any = searchParams.get('sessionType')
     const date = searchParams.get('date')
 
     if (!studentId || !sessionType || !date) {
