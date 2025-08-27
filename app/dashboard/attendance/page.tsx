@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation'
 import { Clock, Search, Filter, Download, Calendar, MapPin, User } from 'lucide-react'
 import Navigation from '@/components/layout/Navigation'
 import { toast } from 'react-hot-toast'
-import PdfImportButton from '@/components/dashboard/PdfImportButton'
 
 interface AttendanceRecord {
   id: string
@@ -166,7 +165,7 @@ export default function AttendancePage() {
 
           {/* Filters */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-2">
                   Search Student
@@ -223,27 +222,24 @@ export default function AttendancePage() {
               </div> */}
             </div>
 
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div className="flex justify-between items-center mt-4">
               <button
                 onClick={() => {
                   setFilters({ search: '', date: '', gateLocation: '' })
                   setPagination(prev => ({ ...prev, page: 1 }))
                 }}
-                className="text-sm text-gray-600 hover:text-gray-800 px-3 py-2 rounded-md hover:bg-gray-100 transition-colors duration-200"
+                className="text-sm text-gray-600 hover:text-gray-800"
               >
                 Clear Filters
               </button>
 
-              <div className="flex items-center space-x-3">
-                <PdfImportButton />
-                <button
-                  onClick={exportAttendance}
-                  className="inline-flex items-center px-4 py-2 bg-success-600 hover:bg-success-700 text-white text-sm font-medium rounded-md transition-colors duration-200"
-                >
-                  <Download className="w-4 h-4 mr-2" />
-                  Export CSV
-                </button>
-              </div>
+              <button
+                onClick={exportAttendance}
+                className="inline-flex items-center px-4 py-2 bg-success-600 hover:bg-success-700 text-white text-sm font-medium rounded-md transition-colors duration-200"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Export CSV
+              </button>
             </div>
           </div>
 

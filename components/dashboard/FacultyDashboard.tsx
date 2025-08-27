@@ -54,7 +54,7 @@ export default function FacultyDashboard() {
   const quickActions = [
     {
       title: 'QR Scanner',
-      description: 'Advanced scanner with morning/afternoon session tracking',
+      description: 'Scan student QR codes for attendance',
       icon: QrCode,
       href: '/dashboard/qr-scanner',
       color: 'bg-primary-500',

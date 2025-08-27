@@ -3,10 +3,9 @@
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { Users, Search, Filter, Download, GraduationCap, Calendar, Mail, QrCode } from 'lucide-react'
+import { Users, Search, Filter, Download, GraduationCap, Calendar, Mail } from 'lucide-react'
 import Navigation from '@/components/layout/Navigation'
 import { toast } from 'react-hot-toast'
-import PdfImportButton from '@/components/dashboard/PdfImportButton'
 
 interface Student {
   id: string
@@ -253,8 +252,6 @@ export default function StudentsPage() {
               >
                 Clear Filters
               </button>
-
-              <PdfImportButton />
 
               <button
                 onClick={exportStudents}
