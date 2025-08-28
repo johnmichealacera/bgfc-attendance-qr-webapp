@@ -22,7 +22,8 @@ interface ScanResult {
 export default function QRScannerPage() {
   const { data: session, status } = useSession()
   const [scanResult, setScanResult] = useState<ScanResult | null>(null)
-  const [gateLocation, setGateLocation] = useState('Main Gate')
+  const [gateLocation, setGateLocation] = useState('Main Gate');
+  const [sessionType, setSessionType] = useState('MORNING_IN');
   const [isLoading, setIsLoading] = useState(false)
   const [recentScans, setRecentScans] = useState<ScanResult[]>([])
 

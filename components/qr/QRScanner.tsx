@@ -9,6 +9,7 @@ import { validateAndSanitizeQR } from '@/utils/qr-validation'
 interface QRScannerProps {
   onScan: (data: string) => void
   gateLocation?: string
+  sessionType?: string
 }
 
 interface SessionConfig {
@@ -50,14 +51,14 @@ const SESSION_CONFIGS: SessionConfig[] = [
   }
 ]
 
-export default function QRScanner({ onScan, gateLocation = 'Main Gate' }: QRScannerProps) {
+export default function QRScanner({ onScan, gateLocation = 'Main Gate', sessionType = 'MORNING_IN' }: QRScannerProps) {
   const [isScanning, setIsScanning] = useState(false)
   const [scannedData, setScannedData] = useState('')
   const [manualInput, setManualInput] = useState('')
   const [scanMode, setScanMode] = useState<'camera' | 'manual'>('camera')
   const [isProcessing, setIsProcessing] = useState(false)
   const [cameraError, setCameraError] = useState<string | null>(null)
-  const [selectedSession, setSelectedSession] = useState<string>('MORNING_IN')
+  const [selectedSession, setSelectedSession] = useState<string>(sessionType)
   const [notes, setNotes] = useState<string>('')
   
   // Debouncing state to prevent multiple scans
@@ -111,7 +112,6 @@ export default function QRScanner({ onScan, gateLocation = 'Main Gate' }: QRScan
       }
 
       const sanitizedData = validation.sanitized
-      setScannedData(sanitizedData)
 
       // Call the onScan callback with enhanced data including session info
       const enhancedData = {
@@ -120,6 +120,8 @@ export default function QRScanner({ onScan, gateLocation = 'Main Gate' }: QRScan
         gateLocation,
         notes: notes.trim() || undefined
       }
+      
+      setScannedData(sanitizedData)
       
       onScan(JSON.stringify(enhancedData))
       
