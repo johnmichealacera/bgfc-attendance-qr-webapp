@@ -6,18 +6,17 @@ import { useRouter } from 'next/navigation'
 import { Clock, Search, Filter, Download, Calendar, MapPin, User } from 'lucide-react'
 import Navigation from '@/components/layout/Navigation'
 import { toast } from 'react-hot-toast'
+import PdfImportButton from '@/components/dashboard/PdfImportButton'
 
 interface AttendanceRecord {
   id: string
   timestamp: string
   gateLocation: string
-  student: {
-    studentId: string
-    user: {
-      name: string
-      email: string
-    }
-  }
+  studentId: string
+  studentName: string
+  studentEmail: string
+  sessionType: string
+  notes?: string
 }
 
 interface Pagination {
@@ -42,6 +41,7 @@ export default function AttendancePage() {
     search: '',
     date: '',
     gateLocation: '',
+    sessionType: '',
   })
 
   useEffect(() => {
@@ -65,6 +65,7 @@ export default function AttendancePage() {
         ...(filters.search && { search: filters.search }),
         ...(filters.date && { date: filters.date }),
         ...(filters.gateLocation && { gateLocation: filters.gateLocation }),
+        ...(filters.sessionType && { sessionType: filters.sessionType }),
       })
 
       const response = await fetch(`/api/attendance?${params}`)
@@ -99,6 +100,7 @@ export default function AttendancePage() {
         ...(filters.search && { search: filters.search }),
         ...(filters.date && { date: filters.date }),
         ...(filters.gateLocation && { gateLocation: filters.gateLocation }),
+        ...(filters.sessionType && { sessionType: filters.sessionType }),
       })
 
       const response = await fetch(`/api/attendance?${params}`)
@@ -107,13 +109,15 @@ export default function AttendancePage() {
         
         // Convert to CSV
         const csvContent = [
-          ['Student ID', 'Student Name', 'Email', 'Gate Location', 'Timestamp'],
+          ['Student ID', 'Student Name', 'Email', 'Gate Location', 'Session Type', 'Timestamp', 'Notes'],
           ...data.attendance.map((record: AttendanceRecord) => [
-            record.student.studentId,
-            record.student.user.name,
-            record.student.user.email,
+            record.studentId,
+            record.studentName,
+            record.studentEmail,
             record.gateLocation,
+            record.sessionType,
             new Date(record.timestamp).toLocaleString(),
+            record.notes || '',
           ])
         ].map(row => row.map((field: any) => `"${field}"`).join(',')).join('\n')
 
@@ -165,7 +169,7 @@ export default function AttendancePage() {
 
           {/* Filters */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
               <div>
                 <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-2">
                   Search Student
@@ -199,6 +203,24 @@ export default function AttendancePage() {
                 </div>
               </div>
 
+              <div>
+                <label htmlFor="sessionType" className="block text-sm font-medium text-gray-700 mb-2">
+                  Session Type
+                </label>
+                <select
+                  id="sessionType"
+                  value={filters.sessionType}
+                  onChange={(e) => handleFilterChange('sessionType', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                >
+                  <option value="">All Sessions</option>
+                  <option value="MORNING_IN">Morning In</option>
+                  <option value="MORNING_OUT">Morning Out</option>
+                  <option value="AFTERNOON_IN">Afternoon In</option>
+                  <option value="AFTERNOON_OUT">Afternoon Out</option>
+                </select>
+              </div>
+
               {/* <div>
                 <label htmlFor="gateLocation" className="block text-sm font-medium text-gray-700 mb-2">
                   Gate Location
@@ -222,24 +244,27 @@ export default function AttendancePage() {
               </div> */}
             </div>
 
-            <div className="flex justify-between items-center mt-4">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <button
                 onClick={() => {
-                  setFilters({ search: '', date: '', gateLocation: '' })
+                  setFilters({ search: '', date: '', gateLocation: '', sessionType: '' })
                   setPagination(prev => ({ ...prev, page: 1 }))
                 }}
-                className="text-sm text-gray-600 hover:text-gray-800"
+                className="text-sm text-gray-600 hover:text-gray-800 px-3 py-2 rounded-md hover:bg-gray-100 transition-colors duration-200"
               >
                 Clear Filters
               </button>
 
-              <button
-                onClick={exportAttendance}
-                className="inline-flex items-center px-4 py-2 bg-success-600 hover:bg-success-700 text-white text-sm font-medium rounded-md transition-colors duration-200"
-              >
-                <Download className="w-4 h-4 mr-2" />
-                Export CSV
-              </button>
+              <div className="flex items-center space-x-3">
+                <PdfImportButton />
+                <button
+                  onClick={exportAttendance}
+                  className="inline-flex items-center px-4 py-2 bg-success-600 hover:bg-success-700 text-white text-sm font-medium rounded-md transition-colors duration-200"
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  Export CSV
+                </button>
+              </div>
             </div>
           </div>
 
@@ -269,9 +294,12 @@ export default function AttendancePage() {
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Student
                         </th>
-                        {/* <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Gate Location
-                        </th> */}
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Session Type
+                        </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Timestamp
                         </th>
@@ -283,10 +311,10 @@ export default function AttendancePage() {
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div>
                               <div className="text-sm font-medium text-gray-900">
-                                {record.student.user.name}
+                                {record?.studentName}
                               </div>
                               <div className="text-sm text-gray-500">
-                                {record.student.studentId}
+                                {record?.studentId}
                               </div>
                             </div>
                           </td>
@@ -294,6 +322,19 @@ export default function AttendancePage() {
                             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                               <MapPin className="w-3 h-3 mr-1" />
                               {record.gateLocation}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                              record.sessionType === 'MORNING_IN' ? 'bg-yellow-100 text-yellow-800' :
+                              record.sessionType === 'MORNING_OUT' ? 'bg-orange-100 text-orange-800' :
+                              record.sessionType === 'AFTERNOON_IN' ? 'bg-blue-100 text-blue-800' :
+                              'bg-indigo-100 text-indigo-800'
+                            }`}>
+                              {record.sessionType === 'MORNING_IN' ? '🌅 Morning In' :
+                               record.sessionType === 'MORNING_OUT' ? '🌅 Morning Out' :
+                               record.sessionType === 'AFTERNOON_IN' ? '🌆 Afternoon In' :
+                               '🌆 Afternoon Out'}
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">

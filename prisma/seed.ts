@@ -120,6 +120,7 @@ async function main() {
         studentId: attendance.studentId,
         timestamp,
         gateLocation: attendance.gateLocation,
+        sessionType: 'MORNING_IN',
       },
     })
   }

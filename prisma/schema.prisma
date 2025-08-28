@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -18,28 +15,24 @@ model User {
   role         UserRole @default(STUDENT)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
-
-  // Relations
-  student      Student?
   faculty      Faculty?
+  student      Student?
 
   @@map("users")
 }
 
 model Student {
-  id            String   @id @default(cuid())
-  studentId     String   @unique // S<8-digit-ID> format
-  qrCodeValue   String   @unique
+  id             String       @id @default(cuid())
+  studentId      String       @unique
+  qrCodeValue    String       @unique
   qrCodeImageUrl String?
-  course        String   // Student's course (e.g., BSCRIM, BSED - English, BEED, etc.)
-  yearLevel     String   // Student's year level (e.g., 1st Year, 2nd Year, 3rd Year, 4th Year, 5th Year)
-  userId        String   @unique
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  // Relations
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  attendance   Attendance[]
+  userId         String       @unique
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  course         String
+  yearLevel      String
+  attendance     Attendance[]
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("students")
 }
@@ -49,23 +42,23 @@ model Faculty {
   userId    String   @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  // Relations
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("faculty")
 }
 
 model Attendance {
-  id           String   @id @default(cuid())
+  id           String      @id @default(cuid())
   studentId    String
-  timestamp    DateTime @default(now())
-  gateLocation String?  // Optional gate/location field
-  createdAt    DateTime @default(now())
+  timestamp    DateTime    @default(now())
+  gateLocation String?
+  createdAt    DateTime    @default(now())
+  notes        String?
+  sessionDate  DateTime    @default(now())
+  sessionType  SessionType
+  student      Student     @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
-  // Relations
-  student     Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
-
+  @@unique([studentId, sessionType, sessionDate])
   @@map("attendance")
 }
 
@@ -73,4 +66,11 @@ enum UserRole {
   ADMIN
   FACULTY
   STUDENT
+}
+
+enum SessionType {
+  MORNING_IN
+  MORNING_OUT
+  AFTERNOON_IN
+  AFTERNOON_OUT
 }

@@ -3,9 +3,10 @@
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { Users, Search, Filter, Download, GraduationCap, User, Eye, QrCode } from 'lucide-react'
-import Navigation from '@/components/layout/Navigation'
 import { toast } from 'react-hot-toast'
+import { Search, Download, Eye, Filter, ChevronLeft, ChevronRight, QrCode } from 'lucide-react'
+import Navigation from '@/components/layout/Navigation'
+import PdfImportButton from '@/components/dashboard/PdfImportButton'
 
 interface Student {
   id: string
@@ -185,6 +186,7 @@ export default function AllStudentsPage() {
                   <Download className="w-4 h-4 mr-2" />
                   Export CSV
                 </button>
+                <PdfImportButton />
               </div>
             </div>
           </div>
@@ -337,7 +339,7 @@ export default function AllStudentsPage() {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getCourseBadgeColor(student.course)}`}>
-                              <GraduationCap className="w-3 h-3 mr-1" />
+                              {/* <GraduationCap className="w-3 h-3 mr-1" /> */}
                               {student.course}
                             </span>
                           </td>

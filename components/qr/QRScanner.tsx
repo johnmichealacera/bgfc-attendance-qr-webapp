@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { Camera, CheckCircle, XCircle, RefreshCw } from 'lucide-react'
+import { Camera, CheckCircle, XCircle, RefreshCw, Sun, Moon, LogIn, LogOut } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import { Scanner } from '@yudiel/react-qr-scanner'
 import { validateAndSanitizeQR } from '@/utils/qr-validation'
@@ -9,20 +9,71 @@ import { validateAndSanitizeQR } from '@/utils/qr-validation'
 interface QRScannerProps {
   onScan: (data: string) => void
   gateLocation?: string
+  sessionType?: string
 }
 
-export default function QRScanner({ onScan, gateLocation = 'Main Gate' }: QRScannerProps) {
+interface SessionConfig {
+  type: string
+  label: string
+  icon: any
+  color: string
+  timeRange: string
+}
+
+const SESSION_CONFIGS: SessionConfig[] = [
+  {
+    type: 'MORNING_IN',
+    label: 'Morning In',
+    icon: Sun,
+    color: 'bg-yellow-500',
+    timeRange: '6:00 AM - 8:00 AM'
+  },
+  {
+    type: 'MORNING_OUT',
+    label: 'Morning Out',
+    icon: Sun,
+    color: 'bg-orange-500',
+    timeRange: '11:30 AM - 12:30 PM'
+  },
+  {
+    type: 'AFTERNOON_IN',
+    label: 'Afternoon In',
+    icon: Moon,
+    color: 'bg-blue-500',
+    timeRange: '12:30 PM - 2:00 PM'
+  },
+  {
+    type: 'AFTERNOON_OUT',
+    label: 'Afternoon Out',
+    icon: Moon,
+    color: 'bg-indigo-500',
+    timeRange: '4:30 PM - 6:00 PM'
+  }
+]
+
+export default function QRScanner({ onScan, gateLocation = 'Main Gate', sessionType = 'MORNING_IN' }: QRScannerProps) {
   const [isScanning, setIsScanning] = useState(false)
   const [scannedData, setScannedData] = useState('')
   const [manualInput, setManualInput] = useState('')
   const [scanMode, setScanMode] = useState<'camera' | 'manual'>('camera')
   const [isProcessing, setIsProcessing] = useState(false)
   const [cameraError, setCameraError] = useState<string | null>(null)
+  const [selectedSession, setSelectedSession] = useState<string>(sessionType)
+  const [notes, setNotes] = useState<string>('')
   
   // Debouncing state to prevent multiple scans
   const [lastScannedCode, setLastScannedCode] = useState<string | null>(null)
   const [lastScanTime, setLastScanTime] = useState<number>(0)
   const isProcessingRef = useRef(false)
+
+  const getSessionLabel = (sessionType: string) => {
+    const config = SESSION_CONFIGS.find(s => s.type === sessionType)
+    return config ? config.label : sessionType
+  }
+
+  const getSessionConfig = (sessionType: string) => {
+    return SESSION_CONFIGS.find(s => s.type === sessionType) || SESSION_CONFIGS[0]
+  }
 
   const handleScan = async (result: any) => {
     const currentTime = Date.now()
@@ -61,10 +112,18 @@ export default function QRScanner({ onScan, gateLocation = 'Main Gate' }: QRScan
       }
 
       const sanitizedData = validation.sanitized
-      setScannedData(sanitizedData)
 
-      // Call the onScan callback with sanitized data
-      onScan(sanitizedData)
+      // Call the onScan callback with enhanced data including session info
+      const enhancedData = {
+        studentId: sanitizedData,
+        sessionType: selectedSession,
+        gateLocation,
+        notes: notes.trim() || undefined
+      }
+      
+      setScannedData(sanitizedData)
+      
+      onScan(JSON.stringify(enhancedData))
       
       toast.success('QR code scanned successfully!')
       
@@ -115,7 +174,16 @@ export default function QRScanner({ onScan, gateLocation = 'Main Gate' }: QRScan
 
     const sanitizedData = validation.sanitized
     setScannedData(sanitizedData)
-    onScan(sanitizedData)
+    
+    // Call the onScan callback with enhanced data including session info
+    const enhancedData = {
+      studentId: sanitizedData,
+      sessionType: selectedSession,
+      gateLocation,
+      notes: notes.trim() || undefined
+    }
+    
+    onScan(JSON.stringify(enhancedData))
     setManualInput('')
     toast.success('Student ID processed successfully!')
   }
@@ -136,6 +204,65 @@ export default function QRScanner({ onScan, gateLocation = 'Main Gate' }: QRScan
 
   return (
     <div className="w-full max-w-md mx-auto">
+      {/* Session Configuration */}
+      <div className="mb-6 bg-white rounded-lg shadow-sm p-4 border border-gray-200">
+        <h3 className="text-lg font-semibold text-gray-900 mb-3">Session Configuration</h3>
+        
+        <div className="grid grid-cols-2 gap-2 mb-4">
+          {SESSION_CONFIGS.map((config) => (
+            <button
+              key={config.type}
+              onClick={() => setSelectedSession(config.type)}
+              className={`p-3 rounded-lg border-2 transition-all duration-200 ${
+                selectedSession === config.type
+                  ? `${config.color} border-white text-white shadow-lg`
+                  : 'bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              <div className="flex items-center space-x-2">
+                <config.icon className="w-4 h-4" />
+                <div className="text-left">
+                  <div className="font-semibold text-xs">{config.label}</div>
+                  <div className="text-xs opacity-90">{config.timeRange}</div>
+                </div>
+              </div>
+            </button>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-1 gap-3">
+          {/* <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Gate Location
+            </label>
+            <select
+              value={gateLocation}
+              onChange={(e) => onScan(JSON.stringify({ gateLocation: e.target.value }))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+            >
+              <option value="Main Gate">Main Gate</option>
+              <option value="Back Gate">Back Gate</option>
+              <option value="Side Gate">Side Gate</option>
+              <option value="Faculty Entrance">Faculty Entrance</option>
+              <option value="Student Entrance">Student Entrance</option>
+            </select>
+          </div> */}
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Notes (Optional)
+            </label>
+            <input
+              type="text"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Late arrival, early departure, etc."
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+            />
+          </div>
+        </div>
+      </div>
+
       {/* Mode Toggle */}
       <div className="flex mb-6 bg-gray-100 rounded-lg p-1">
         <button
@@ -235,6 +362,17 @@ export default function QRScanner({ onScan, gateLocation = 'Main Gate' }: QRScan
                   <p className="text-xs text-green-700">
                     <strong>Student ID:</strong> {scannedData}
                   </p>
+                  <p className="text-xs text-green-700">
+                    <strong>Session:</strong> {getSessionLabel(selectedSession)}
+                  </p>
+                  <p className="text-xs text-green-700">
+                    <strong>Gate:</strong> {gateLocation}
+                  </p>
+                  {notes && (
+                    <p className="text-xs text-green-700">
+                      <strong>Notes:</strong> {notes}
+                    </p>
+                  )}
                   <p className="text-xs text-green-700 mt-1">
                     Attendance processing...
                   </p>
@@ -317,6 +455,17 @@ export default function QRScanner({ onScan, gateLocation = 'Main Gate' }: QRScan
                   <p className="text-xs text-green-700">
                     <strong>Student ID:</strong> {scannedData}
                   </p>
+                  <p className="text-xs text-green-700">
+                    <strong>Session:</strong> {getSessionLabel(selectedSession)}
+                  </p>
+                  <p className="text-xs text-green-700">
+                    <strong>Gate:</strong> {gateLocation}
+                  </p>
+                  {notes && (
+                    <p className="text-xs text-green-700">
+                      <strong>Notes:</strong> {notes}
+                    </p>
+                  )}
                   <p className="text-xs text-green-700 mt-1">
                     Attendance processing...
                   </p>
