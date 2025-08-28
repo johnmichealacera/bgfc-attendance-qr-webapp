@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Error recording attendance:', error)
     return NextResponse.json(
-      { message: 'Error recording attendance' },
+      { message: JSON.stringify(error) },
       { status: 500 }
     )
   }

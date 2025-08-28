@@ -89,7 +89,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Error logging attendance:', error)
     return NextResponse.json(
-      { message: 'Internal server error' },
+      { message: JSON.stringify(error) },
       { status: 500 }
     )
   }
