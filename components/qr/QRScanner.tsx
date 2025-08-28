@@ -231,7 +231,7 @@ export default function QRScanner({ onScan, gateLocation = 'Main Gate', sessionT
         </div>
 
         <div className="grid grid-cols-1 gap-3">
-          <div>
+          {/* <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Gate Location
             </label>
@@ -246,7 +246,7 @@ export default function QRScanner({ onScan, gateLocation = 'Main Gate', sessionT
               <option value="Faculty Entrance">Faculty Entrance</option>
               <option value="Student Entrance">Student Entrance</option>
             </select>
-          </div>
+          </div> */}
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">

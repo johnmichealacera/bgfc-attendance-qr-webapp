@@ -297,7 +297,7 @@ export default function EnhancedQRScanner() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
+            {/* <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Gate Location
               </label>
@@ -312,7 +312,7 @@ export default function EnhancedQRScanner() {
                 <option value="Faculty Entrance">Faculty Entrance</option>
                 <option value="Student Entrance">Student Entrance</option>
               </select>
-            </div>
+            </div> */}
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
