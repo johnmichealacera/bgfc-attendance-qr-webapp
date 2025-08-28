@@ -59,17 +59,17 @@ export default function QRScannerPage() {
       
       setIsLoading(true)
       
-      // Use the studentId from the scan data
+      // Map the data to match the API expectations
       const response = await fetch('/api/attendance/log', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          qrCode: studentId,
+          qrCode: studentId,           // This maps to qrCode in the API
           gateLocation: scanGateLocation || gateLocation,
-          sessionType,
-          notes
+          sessionType: sessionType,    // Make sure this is passed through
+          notes: notes                 // Make sure this is passed through
         }),
       })
 
