@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
     // Allow public access for attendance logging (no authentication required)
     // This enables the QR scanner to work at school gates without login
 
-    const { qrCode, gateLocation, sessionType } = await request.json()
+    const { qrCode, gateLocation, sessionType, notes } = await request.json()
 
     if (!qrCode || !gateLocation) {
       return NextResponse.json(
@@ -74,6 +74,7 @@ export async function POST(request: NextRequest) {
         gateLocation,
         timestamp: new Date(),
         sessionType,
+        notes: notes || null, // Add notes support
       },
     })
 
@@ -83,6 +84,8 @@ export async function POST(request: NextRequest) {
       studentName: student.user.name,
       timestamp: attendance.timestamp,
       gateLocation: attendance.gateLocation,
+      sessionType: attendance.sessionType, // Return sessionType
+      notes: attendance.notes,             // Return notes
       message: 'Attendance logged successfully',
     })
 
