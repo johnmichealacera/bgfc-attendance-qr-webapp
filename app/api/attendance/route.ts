@@ -192,8 +192,10 @@ export async function GET(request: NextRequest) {
       attendance: attendance.map(record => ({
         id: record.id,
         studentId: record.student.studentId,
-        studentName: record.student.user.name,
+        studentName: record.student.user.name, // This should be the actual student name
         studentEmail: record.student.user.email,
+        course: record.student.course,         // Add course separately
+        yearLevel: record.student.yearLevel,   // Add year level separately
         sessionType: record.sessionType,
         timestamp: record.timestamp,
         gateLocation: record.gateLocation,

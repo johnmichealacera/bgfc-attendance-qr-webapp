@@ -12,13 +12,9 @@ interface AttendanceRecord {
   id: string
   timestamp: string
   gateLocation: string
-  student: {
-    studentId: string
-    user: {
-      name: string
-      email: string
-    }
-  }
+  studentId: string
+  studentName: string
+  studentEmail: string
 }
 
 interface Pagination {
@@ -110,9 +106,9 @@ export default function AttendancePage() {
         const csvContent = [
           ['Student ID', 'Student Name', 'Email', 'Gate Location', 'Timestamp'],
           ...data.attendance.map((record: AttendanceRecord) => [
-            record.student.studentId,
-            record.student.user.name,
-            record.student.user.email,
+            record.studentId,
+            record.studentName,
+            record.studentEmail,
             record.gateLocation,
             new Date(record.timestamp).toLocaleString(),
           ])
@@ -287,10 +283,10 @@ export default function AttendancePage() {
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div>
                               <div className="text-sm font-medium text-gray-900">
-                                {record.student.user.name}
+                                {record?.studentName}
                               </div>
                               <div className="text-sm text-gray-500">
-                                {record.student.studentId}
+                                {record?.studentId}
                               </div>
                             </div>
                           </td>

@@ -49,11 +49,12 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Check for duplicate attendance within 5 minutes
+    // Check for duplicate attendance within 5 minutes (same session type)
     const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000)
     const existingAttendance = await prisma.attendance.findFirst({
       where: {
         studentId: student.id,
+        sessionType: sessionType,
         timestamp: {
           gte: fiveMinutesAgo,
         },
@@ -62,7 +63,7 @@ export async function POST(request: NextRequest) {
 
     if (existingAttendance) {
       return NextResponse.json(
-        { message: 'Attendance already logged within the last 5 minutes' },
+        { message: `Attendance already logged for ${sessionType} within the last 5 minutes` },
         { status: 409 }
       )
     }
