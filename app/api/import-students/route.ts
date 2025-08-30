@@ -70,9 +70,11 @@ async function processPdfFile(file: File) {
   let pdfParse: any = null
   
   try {
-    // Try to dynamically import pdf-parse
-    pdfParse = (await import('pdf-parse')).default
+    // Import pdf-parse for server-side processing
+    pdfParse = await import('pdf-parse')
+    console.log('PDF parsing library imported successfully')
   } catch (importError) {
+    console.log('importError', JSON.stringify(importError))
     console.log('PDF parsing library not available, using sample data')
     return generateSampleStudents()
   }
@@ -81,6 +83,8 @@ async function processPdfFile(file: File) {
     // Convert file to buffer
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
+    
+    console.log(`Processing PDF file: ${file.name}, size: ${file.size} bytes`)
     
     // Parse PDF content
     const pdfData = await pdfParse(buffer)
@@ -101,6 +105,7 @@ async function processPdfFile(file: File) {
 
   } catch (parseError) {
     console.error('PDF parsing failed:', parseError)
+    console.error('Error details:', JSON.stringify(parseError))
     return generateSampleStudents()
   }
 }
