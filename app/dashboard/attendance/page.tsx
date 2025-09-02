@@ -9,14 +9,36 @@ import { toast } from 'react-hot-toast'
 import PdfImportButton from '@/components/dashboard/PdfImportButton'
 
 interface AttendanceRecord {
-  id: string
-  timestamp: string
-  gateLocation: string
   studentId: string
   studentName: string
   studentEmail: string
-  sessionType: string
-  notes?: string
+  course: string
+  yearLevel: string
+  date: string
+  MORNING_IN: {
+    timestamp: string
+    gateLocation: string
+    notes?: string
+    id: string
+  } | null
+  MORNING_OUT: {
+    timestamp: string
+    gateLocation: string
+    notes?: string
+    id: string
+  } | null
+  AFTERNOON_IN: {
+    timestamp: string
+    gateLocation: string
+    notes?: string
+    id: string
+  } | null
+  AFTERNOON_OUT: {
+    timestamp: string
+    gateLocation: string
+    notes?: string
+    id: string
+  } | null
 }
 
 interface Pagination {
@@ -107,17 +129,20 @@ export default function AttendancePage() {
       if (response.ok) {
         const data = await response.json()
         
-        // Convert to CSV
+        // Convert to CSV with session types as columns
         const csvContent = [
-          ['Student ID', 'Student Name', 'Email', 'Gate Location', 'Session Type', 'Timestamp', 'Notes'],
+          ['Student ID', 'Student Name', 'Email', 'Course', 'Year Level', 'Date', 'Morning In', 'Morning Out', 'Afternoon In', 'Afternoon Out'],
           ...data.attendance.map((record: AttendanceRecord) => [
             record.studentId,
             record.studentName,
             record.studentEmail,
-            record.gateLocation,
-            record.sessionType,
-            new Date(record.timestamp).toLocaleString(),
-            record.notes || '',
+            record.course,
+            record.yearLevel,
+            record.date,
+            record.MORNING_IN ? new Date(record.MORNING_IN.timestamp).toLocaleTimeString() : '',
+            record.MORNING_OUT ? new Date(record.MORNING_OUT.timestamp).toLocaleTimeString() : '',
+            record.AFTERNOON_IN ? new Date(record.AFTERNOON_IN.timestamp).toLocaleTimeString() : '',
+            record.AFTERNOON_OUT ? new Date(record.AFTERNOON_OUT.timestamp).toLocaleTimeString() : '',
           ])
         ].map(row => row.map((field: any) => `"${field}"`).join(',')).join('\n')
 
@@ -295,53 +320,125 @@ export default function AttendancePage() {
                           Student
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Gate Location
+                          Date
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Session Type
+                          Morning In
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Timestamp
+                          Morning Out
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Afternoon In
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Afternoon Out
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Status
                         </th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
                       {attendance.map((record) => (
-                        <tr key={record.id} className="hover:bg-gray-50">
+                        <tr key={`${record.studentId}-${record.date}`} className="hover:bg-gray-50">
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div>
                               <div className="text-sm font-medium text-gray-900">
-                                {record?.studentName}
+                                {record.studentName}
                               </div>
                               <div className="text-sm text-gray-500">
-                                {record?.studentId}
+                                {record.studentId}
+                              </div>
+                              <div className="text-xs text-gray-400">
+                                {record.course} - {record.yearLevel}
                               </div>
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                              <MapPin className="w-3 h-3 mr-1" />
-                              {record.gateLocation}
-                            </span>
+                            <div className="text-sm text-gray-900">
+                              {new Date(record.date).toLocaleDateString()}
+                            </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                              record.sessionType === 'MORNING_IN' ? 'bg-yellow-100 text-yellow-800' :
-                              record.sessionType === 'MORNING_OUT' ? 'bg-orange-100 text-orange-800' :
-                              record.sessionType === 'AFTERNOON_IN' ? 'bg-blue-100 text-blue-800' :
-                              'bg-indigo-100 text-indigo-800'
-                            }`}>
-                              {record.sessionType === 'MORNING_IN' ? '🌅 Morning In' :
-                               record.sessionType === 'MORNING_OUT' ? '🌅 Morning Out' :
-                               record.sessionType === 'AFTERNOON_IN' ? '🌆 Afternoon In' :
-                               '🌆 Afternoon Out'}
-                            </span>
+                            {record.MORNING_IN ? (
+                              <div className="flex items-center">
+                                <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                                <Clock className="w-4 h-4 text-green-500 mr-2" />
+                                <span className="text-sm text-gray-900">
+                                  {new Date(record.MORNING_IN.timestamp).toLocaleTimeString()}
+                                </span>
+                              </div>
+                            ) : (
+                              <span className="text-sm text-gray-400">-</span>
+                            )}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            <div className="flex items-center">
-                              <Clock className="w-4 h-4 text-gray-400 mr-2" />
-                              {new Date(record.timestamp).toLocaleString()}
-                            </div>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            {record.MORNING_OUT ? (
+                              <div className="flex items-center">
+                                <div className="w-2 h-2 bg-orange-500 rounded-full mr-2"></div>
+                                <Clock className="w-4 h-4 text-orange-500 mr-2" />
+                                <span className="text-sm text-gray-900">
+                                  {new Date(record.MORNING_OUT.timestamp).toLocaleTimeString()}
+                                </span>
+                              </div>
+                            ) : (
+                              <span className="text-sm text-gray-400">-</span>
+                            )}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            {record.AFTERNOON_IN ? (
+                              <div className="flex items-center">
+                                <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
+                                <Clock className="w-4 h-4 text-blue-500 mr-2" />
+                                <span className="text-sm text-gray-900">
+                                  {new Date(record.AFTERNOON_IN.timestamp).toLocaleTimeString()}
+                                </span>
+                              </div>
+                            ) : (
+                              <span className="text-sm text-gray-400">-</span>
+                            )}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            {record.AFTERNOON_OUT ? (
+                              <div className="flex items-center">
+                                <div className="w-2 h-2 bg-indigo-500 rounded-full mr-2"></div>
+                                <Clock className="w-4 h-4 text-indigo-500 mr-2" />
+                                <span className="text-sm text-gray-900">
+                                  {new Date(record.AFTERNOON_OUT.timestamp).toLocaleTimeString()}
+                                </span>
+                              </div>
+                            ) : (
+                              <span className="text-sm text-gray-400">-</span>
+                            )}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            {(() => {
+                              const sessions = [record.MORNING_IN, record.MORNING_OUT, record.AFTERNOON_IN, record.AFTERNOON_OUT]
+                              const presentSessions = sessions.filter(s => s !== null).length
+                              const totalSessions = 4
+                              const percentage = (presentSessions / totalSessions) * 100
+                              
+                              let statusColor = 'bg-red-100 text-red-800'
+                              let statusText = 'Absent'
+                              
+                              if (percentage >= 75) {
+                                statusColor = 'bg-green-100 text-green-800'
+                                statusText = 'Present'
+                              } else if (percentage >= 50) {
+                                statusColor = 'bg-yellow-100 text-yellow-800'
+                                statusText = 'Partial'
+                              } else if (percentage >= 25) {
+                                statusColor = 'bg-orange-100 text-orange-800'
+                                statusText = 'Late'
+                              }
+                              
+                              return (
+                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColor}`}>
+                                  {statusText} ({presentSessions}/{totalSessions})
+                                </span>
+                              )
+                            })()}
                           </td>
                         </tr>
                       ))}

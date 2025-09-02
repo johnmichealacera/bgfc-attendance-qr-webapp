@@ -161,11 +161,8 @@ export async function GET(request: NextRequest) {
       where.gateLocation = gateLocation
     }
 
-    // Get total count
-    const total = await prisma.attendance.count({ where })
-
-    // Get attendance records
-    const attendance = await prisma.attendance.findMany({
+    // Get all attendance records for grouping
+    const allAttendance = await prisma.attendance.findMany({
       where,
       include: {
         student: {
@@ -179,28 +176,53 @@ export async function GET(request: NextRequest) {
           }
         }
       },
-      orderBy: {
-        timestamp: 'desc'
-      },
-      skip,
-      take: limit
+      orderBy: [
+        { student: { user: { name: 'asc' } } },
+        { sessionDate: 'desc' },
+        { timestamp: 'desc' }
+      ]
     })
 
-    const pages = Math.ceil(total / limit)
+    // Group attendance by student and date
+    const groupedAttendance = new Map<string, any>()
 
-    return NextResponse.json({
-      attendance: attendance.map(record => ({
-        id: record.id,
-        studentId: record.student.studentId,
-        studentName: record.student.user.name, // This should be the actual student name
-        studentEmail: record.student.user.email,
-        course: record.student.course,         // Add course separately
-        yearLevel: record.student.yearLevel,   // Add year level separately
-        sessionType: record.sessionType,
+    allAttendance.forEach(record => {
+      const studentKey = `${record.student.studentId}-${record.sessionDate.toISOString().split('T')[0]}`
+      
+      if (!groupedAttendance.has(studentKey)) {
+        groupedAttendance.set(studentKey, {
+          studentId: record.student.studentId,
+          studentName: record.student.user.name,
+          studentEmail: record.student.user.email,
+          course: record.student.course,
+          yearLevel: record.student.yearLevel,
+          date: record.sessionDate.toISOString().split('T')[0],
+          MORNING_IN: null,
+          MORNING_OUT: null,
+          AFTERNOON_IN: null,
+          AFTERNOON_OUT: null,
+          gateLocation: record.gateLocation,
+          notes: record.notes
+        })
+      }
+
+      const group = groupedAttendance.get(studentKey)
+      group[record.sessionType] = {
         timestamp: record.timestamp,
         gateLocation: record.gateLocation,
-        notes: record.notes
-      })),
+        notes: record.notes,
+        id: record.id
+      }
+    })
+
+    // Convert to array and apply pagination
+    const groupedArray = Array.from(groupedAttendance.values())
+    const total = groupedArray.length
+    const pages = Math.ceil(total / limit)
+    const paginatedAttendance = groupedArray.slice(skip, skip + limit)
+
+    return NextResponse.json({
+      attendance: paginatedAttendance,
       pagination: {
         page,
         limit,
