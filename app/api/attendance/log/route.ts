@@ -19,6 +19,12 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Validate session type - now only TIME_IN and TIME_OUT
+    const validSessionTypes = ['TIME_IN', 'TIME_OUT']
+    if (!validSessionTypes.includes(sessionType)) {
+      return NextResponse.json({ message: 'Invalid session type' }, { status: 400 })
+    }
+
     // Validate and sanitize QR code format using centralized validation
     const validation = validateAndSanitizeQR(qrCode)
     if (!validation.isValid) {
@@ -49,12 +55,88 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Get today's date (start of day)
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const currentTime = new Date()
+    const currentHour = currentTime.getHours()
+
+    // Determine if this should be MORNING or AFTERNOON based on current time
+    const isMorning = currentHour < 12 // Before 12 PM (noon)
+
+    // Determine the actual session type based on TIME_IN/TIME_OUT and existing records
+    let actualSessionType: 'MORNING_IN' | 'MORNING_OUT' | 'AFTERNOON_IN' | 'AFTERNOON_OUT'
+    
+    if (sessionType === 'TIME_IN') {
+      // Check if student already has IN for this time period today
+      const inSessionType = isMorning ? 'MORNING_IN' : 'AFTERNOON_IN'
+      const existingIn = await prisma.attendance.findFirst({
+        where: {
+          studentId: student.id,
+          sessionType: inSessionType,
+          sessionDate: {
+            gte: today,
+            lt: new Date(today.getTime() + 24 * 60 * 60 * 1000)
+          }
+        }
+      })
+      
+      if (existingIn) {
+        return NextResponse.json({ 
+          message: `Student already has ${inSessionType} recorded today` 
+        }, { status: 409 })
+      }
+      
+      actualSessionType = inSessionType
+    } else { // TIME_OUT
+      // Check if student has IN for this time period today
+      const inSessionType = isMorning ? 'MORNING_IN' : 'AFTERNOON_IN'
+      const outSessionType = isMorning ? 'MORNING_OUT' : 'AFTERNOON_OUT'
+      
+      const existingIn = await prisma.attendance.findFirst({
+        where: {
+          studentId: student.id,
+          sessionType: inSessionType,
+          sessionDate: {
+            gte: today,
+            lt: new Date(today.getTime() + 24 * 60 * 60 * 1000)
+          }
+        }
+      })
+      
+      if (!existingIn) {
+        return NextResponse.json({ 
+          message: `Student must have ${inSessionType} before recording ${outSessionType}` 
+        }, { status: 400 })
+      }
+      
+      // Check if OUT already exists
+      const existingOut = await prisma.attendance.findFirst({
+        where: {
+          studentId: student.id,
+          sessionType: outSessionType,
+          sessionDate: {
+            gte: today,
+            lt: new Date(today.getTime() + 24 * 60 * 60 * 1000)
+          }
+        }
+      })
+      
+      if (existingOut) {
+        return NextResponse.json({ 
+          message: `Student already has ${outSessionType} recorded today` 
+        }, { status: 409 })
+      }
+      
+      actualSessionType = outSessionType
+    }
+
     // Check for duplicate attendance within 5 minutes (same session type)
     const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000)
     const existingAttendance = await prisma.attendance.findFirst({
       where: {
         studentId: student.id,
-        sessionType: sessionType,
+        sessionType: actualSessionType,
         timestamp: {
           gte: fiveMinutesAgo,
         },
@@ -63,7 +145,7 @@ export async function POST(request: NextRequest) {
 
     if (existingAttendance) {
       return NextResponse.json(
-        { message: `Attendance already logged for ${sessionType} within the last 5 minutes` },
+        { message: `Attendance already logged for ${actualSessionType} within the last 5 minutes` },
         { status: 409 }
       )
     }
@@ -74,7 +156,8 @@ export async function POST(request: NextRequest) {
         studentId: student.id,
         gateLocation,
         timestamp: new Date(),
-        sessionType,
+        sessionType: actualSessionType,
+        sessionDate: today,
         notes: notes || null, // Add notes support
       },
     })
@@ -85,9 +168,9 @@ export async function POST(request: NextRequest) {
       studentName: student.user.name,
       timestamp: attendance.timestamp,
       gateLocation: attendance.gateLocation,
-      sessionType: attendance.sessionType, // Return sessionType
+      sessionType: attendance.sessionType, // Return actual sessionType
       notes: attendance.notes,             // Return notes
-      message: 'Attendance logged successfully',
+      message: `Attendance logged successfully for ${actualSessionType}`,
     })
 
   } catch (error) {
