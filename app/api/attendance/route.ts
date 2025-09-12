@@ -24,8 +24,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: 'Missing required fields' }, { status: 400 })
     }
 
-    // Validate session type - now only MORNING and AFTERNOON
-    const validSessionTypes = ['MORNING', 'AFTERNOON']
+    // Validate session type - now only TIME_IN and TIME_OUT
+    const validSessionTypes = ['TIME_IN', 'TIME_OUT']
     if (!validSessionTypes.includes(sessionType)) {
       return NextResponse.json({ message: 'Invalid session type' }, { status: 400 })
     }
@@ -33,15 +33,23 @@ export async function POST(request: NextRequest) {
     // Get today's date (start of day)
     const today = new Date()
     today.setHours(0, 0, 0, 0)
+    const currentTime = new Date()
+    const currentHour = currentTime.getHours()
 
-    // Determine if this should be IN or OUT based on existing attendance
+    // Determine if this should be MORNING or AFTERNOON based on current time
+    const isMorning = currentHour < 12 // Before 12 PM (noon)
+    const timePeriod = isMorning ? 'MORNING' : 'AFTERNOON'
+
+    // Determine the actual session type based on TIME_IN/TIME_OUT and existing records
     let actualSessionType: 'MORNING_IN' | 'MORNING_OUT' | 'AFTERNOON_IN' | 'AFTERNOON_OUT'
-    if (sessionType === 'MORNING') {
-      // Check if student already has MORNING_IN today
-      const morningInExists = await prisma.attendance.findFirst({
+    
+    if (sessionType === 'TIME_IN') {
+      // Check if student already has IN for this time period today
+      const inSessionType = isMorning ? 'MORNING_IN' : 'AFTERNOON_IN'
+      const existingIn = await prisma.attendance.findFirst({
         where: {
           studentId,
-          sessionType: 'MORNING_IN',
+          sessionType: inSessionType,
           sessionDate: {
             gte: today,
             lt: new Date(today.getTime() + 24 * 60 * 60 * 1000)
@@ -49,39 +57,54 @@ export async function POST(request: NextRequest) {
         }
       })
       
-      actualSessionType = morningInExists ? 'MORNING_OUT' : 'MORNING_IN'
-    } else { // AFTERNOON
-      // Check if student already has AFTERNOON_IN today
-      const afternoonInExists = await prisma.attendance.findFirst({
-        where: {
-          studentId,
-          sessionType: 'AFTERNOON_IN',
-          sessionDate: {
-            gte: today,
-            lt: new Date(today.getTime() + 24 * 60 * 60 * 1000)
-          }
-        }
-      })
-      
-      actualSessionType = afternoonInExists ? 'AFTERNOON_OUT' : 'AFTERNOON_IN'
-    }
-
-    // Check if attendance already exists for this student, session type, and date
-    const existingAttendance = await prisma.attendance.findFirst({
-      where: {
-        studentId,
-        sessionType: actualSessionType,
-        sessionDate: {
-          gte: today,
-          lt: new Date(today.getTime() + 24 * 60 * 60 * 1000) // Next day
-        }
+      if (existingIn) {
+        return NextResponse.json({ 
+          message: `Student already has ${inSessionType} recorded today` 
+        }, { status: 409 })
       }
-    })
-
-    if (existingAttendance) {
-      return NextResponse.json({ 
-        message: `Attendance already recorded for ${actualSessionType} today` 
-      }, { status: 409 })
+      
+      actualSessionType = inSessionType
+    } else { // TIME_OUT
+      // Check if student has IN for this time period today
+      const inSessionType = isMorning ? 'MORNING_IN' : 'AFTERNOON_IN'
+      const outSessionType = isMorning ? 'MORNING_OUT' : 'AFTERNOON_OUT'
+      
+      const existingIn = await prisma.attendance.findFirst({
+        where: {
+          studentId,
+          sessionType: inSessionType,
+          sessionDate: {
+            gte: today,
+            lt: new Date(today.getTime() + 24 * 60 * 60 * 1000)
+          }
+        }
+      })
+      
+      if (!existingIn) {
+        return NextResponse.json({ 
+          message: `Student must have ${inSessionType} before recording ${outSessionType}` 
+        }, { status: 400 })
+      }
+      
+      // Check if OUT already exists
+      const existingOut = await prisma.attendance.findFirst({
+        where: {
+          studentId,
+          sessionType: outSessionType,
+          sessionDate: {
+            gte: today,
+            lt: new Date(today.getTime() + 24 * 60 * 60 * 1000)
+          }
+        }
+      })
+      
+      if (existingOut) {
+        return NextResponse.json({ 
+          message: `Student already has ${outSessionType} recorded today` 
+        }, { status: 409 })
+      }
+      
+      actualSessionType = outSessionType
     }
 
     // Create attendance record

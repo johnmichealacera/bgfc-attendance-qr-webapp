@@ -22,22 +22,22 @@ interface SessionConfig {
 
 const SESSION_CONFIGS: SessionConfig[] = [
   {
-    type: 'MORNING',
-    label: 'Morning Session',
+    type: 'TIME_IN',
+    label: 'Time In',
     icon: Sun,
-    color: 'bg-yellow-500',
-    timeRange: '6:00 AM - 12:30 PM'
+    color: 'bg-green-500',
+    timeRange: 'Morning (6:00 AM - 12:00 PM) or Afternoon (12:00 PM - 6:00 PM)'
   },
   {
-    type: 'AFTERNOON',
-    label: 'Afternoon Session',
+    type: 'TIME_OUT',
+    label: 'Time Out',
     icon: Moon,
-    color: 'bg-blue-500',
-    timeRange: '12:30 PM - 6:00 PM'
+    color: 'bg-red-500',
+    timeRange: 'Morning (6:00 AM - 12:00 PM) or Afternoon (12:00 PM - 6:00 PM)'
   }
 ]
 
-export default function QRScanner({ onScan, gateLocation = 'Main Gate', sessionType = 'MORNING' }: QRScannerProps) {
+export default function QRScanner({ onScan, gateLocation = 'Main Gate', sessionType = 'TIME_IN' }: QRScannerProps) {
   const [isScanning, setIsScanning] = useState(false)
   const [scannedData, setScannedData] = useState('')
   const [manualInput, setManualInput] = useState('')
@@ -194,7 +194,7 @@ export default function QRScanner({ onScan, gateLocation = 'Main Gate', sessionT
       <div className="mb-6 bg-white rounded-lg shadow-sm p-4 border border-gray-200">
         <h3 className="text-lg font-semibold text-gray-900 mb-3">Session Configuration</h3>
         <p className="text-sm text-gray-600 mb-4">
-          Select a session and scan student QR codes. The system will automatically determine if it's time in or time out.
+          Select Time In or Time Out and scan student QR codes. The system will automatically determine if it's morning (AM) or afternoon (PM) based on the current time.
         </p>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-4">

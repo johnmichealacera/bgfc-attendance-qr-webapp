@@ -41,18 +41,18 @@ interface SessionConfig {
 
 const SESSION_CONFIGS: SessionConfig[] = [
   {
-    type: 'MORNING',
-    label: 'Morning Session',
+    type: 'TIME_IN',
+    label: 'Time In',
     icon: Sun,
-    color: 'bg-yellow-500',
-    timeRange: '6:00 AM - 12:30 PM'
+    color: 'bg-green-500',
+    timeRange: 'Morning (6:00 AM - 12:00 PM) or Afternoon (12:00 PM - 6:00 PM)'
   },
   {
-    type: 'AFTERNOON',
-    label: 'Afternoon Session',
+    type: 'TIME_OUT',
+    label: 'Time Out',
     icon: Moon,
-    color: 'bg-blue-500',
-    timeRange: '12:30 PM - 6:00 PM'
+    color: 'bg-red-500',
+    timeRange: 'Morning (6:00 AM - 12:00 PM) or Afternoon (12:00 PM - 6:00 PM)'
   }
 ]
 
@@ -60,7 +60,7 @@ export default function EnhancedQRScanner() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const [isScanning, setIsScanning] = useState(false)
-  const [selectedSession, setSelectedSession] = useState<string>('MORNING')
+  const [selectedSession, setSelectedSession] = useState<string>('TIME_IN')
   const [gateLocation, setGateLocation] = useState<string>('Main Gate')
   const [scanResult, setScanResult] = useState<ScanResult | null>(null)
   const [recentScans, setRecentScans] = useState<ScanResult[]>([])
@@ -252,7 +252,7 @@ export default function EnhancedQRScanner() {
             Enhanced QR Attendance Scanner
           </h1>
           <p className="text-xl text-gray-600">
-            Track morning and afternoon sessions with automatic time in/out detection
+            Track time in and time out with automatic AM/PM detection based on current time
           </p>
         </div>
 
@@ -260,7 +260,7 @@ export default function EnhancedQRScanner() {
         <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
           <h2 className="text-2xl font-semibold text-gray-900 mb-4">Session Configuration</h2>
           <p className="text-gray-600 mb-4">
-            Select a session and scan student QR codes. The system will automatically determine if it's time in or time out based on existing attendance records.
+            Select Time In or Time Out and scan student QR codes. The system will automatically determine if it's morning (AM) or afternoon (PM) based on the current time.
           </p>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
