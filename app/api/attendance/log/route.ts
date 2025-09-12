@@ -55,14 +55,24 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Get today's date (start of day)
-    const today = new Date()
+    // Get today's date (start of day) in Philippines timezone
+    const philippinesTime = new Date().toLocaleString("en-US", {timeZone: "Asia/Manila"})
+    const today = new Date(philippinesTime)
     today.setHours(0, 0, 0, 0)
-    const currentTime = new Date()
+    
+    const currentTime = new Date(philippinesTime)
     const currentHour = currentTime.getHours()
 
     // Determine if this should be MORNING or AFTERNOON based on current time
-    const isMorning = currentHour < 12 // Before 12 PM (noon)
+    // Morning: 6:00 AM - 12:00 PM (6-11), Afternoon: 12:00 PM - 6:00 PM (12-17)
+    const isMorning = currentHour >= 6 && currentHour < 12
+    const isAfternoon = currentHour >= 12 && currentHour < 18
+    
+    if (!isMorning && !isAfternoon) {
+      return NextResponse.json({ 
+        message: 'Attendance can only be recorded between 6:00 AM and 6:00 PM' 
+      }, { status: 400 })
+    }
 
     // Determine the actual session type based on TIME_IN/TIME_OUT and existing records
     let actualSessionType: 'MORNING_IN' | 'MORNING_OUT' | 'AFTERNOON_IN' | 'AFTERNOON_OUT'
@@ -132,7 +142,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check for duplicate attendance within 5 minutes (same session type)
-    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000)
+    const fiveMinutesAgo = new Date(new Date(philippinesTime).getTime() - 5 * 60 * 1000)
     const existingAttendance = await prisma.attendance.findFirst({
       where: {
         studentId: student.id,
@@ -155,9 +165,9 @@ export async function POST(request: NextRequest) {
       data: {
         studentId: student.id,
         gateLocation,
-        timestamp: new Date(),
+        timestamp: new Date(philippinesTime),
         sessionType: actualSessionType,
-        sessionDate: today,
+        sessionDate: new Date(philippinesTime), // Use Philippines time
         notes: notes || null, // Add notes support
       },
     })
