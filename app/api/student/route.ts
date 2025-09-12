@@ -104,3 +104,75 @@ export async function GET(request: NextRequest) {
     )
   }
 }
+
+export async function PUT(request: NextRequest) {
+  try {
+    const session = await getServerSession()
+
+    console.log('session', session)
+    
+    if (!session) {
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
+    }
+
+    const body = await request.json()
+    const { studentId, name, email, course, yearLevel } = body
+
+    if (!studentId || !name || !email || !course || !yearLevel) {
+      return NextResponse.json({ message: 'Missing required fields' }, { status: 400 })
+    }
+
+    // Find the student
+    const student = await prisma.student.findUnique({
+      where: { studentId },
+      include: { user: true }
+    })
+
+    if (!student) {
+      return NextResponse.json({ message: 'Student not found' }, { status: 404 })
+    }
+
+    // Update student data
+    const updatedStudent = await prisma.student.update({
+      where: { studentId },
+      data: {
+        course,
+        yearLevel,
+        user: {
+          update: {
+            name,
+            email
+          }
+        }
+      },
+      include: {
+        user: {
+          select: {
+            name: true,
+            email: true,
+            createdAt: true
+          }
+        }
+      }
+    })
+
+    return NextResponse.json({
+      success: true,
+      message: 'Student updated successfully',
+      student: {
+        id: updatedStudent.id,
+        studentId: updatedStudent.studentId,
+        course: updatedStudent.course,
+        yearLevel: updatedStudent.yearLevel,
+        user: updatedStudent.user
+      }
+    })
+
+  } catch (error) {
+    console.error('Error updating student:', error)
+    return NextResponse.json(
+      { message: 'Error updating student' },
+      { status: 500 }
+    )
+  }
+}

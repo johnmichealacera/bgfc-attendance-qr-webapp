@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'react-hot-toast'
-import { Search, Download, Eye, Filter, ChevronLeft, ChevronRight, QrCode } from 'lucide-react'
+import { Search, Download, Eye, Filter, ChevronLeft, ChevronRight, QrCode, Edit, X } from 'lucide-react'
 import Navigation from '@/components/layout/Navigation'
 import PdfImportButton from '@/components/dashboard/PdfImportButton'
 
@@ -51,6 +51,14 @@ export default function AllStudentsPage() {
   })
   const [showQRModal, setShowQRModal] = useState(false)
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [editingStudent, setEditingStudent] = useState<Student | null>(null)
+  const [editForm, setEditForm] = useState({
+    name: '',
+    email: '',
+    course: '',
+    yearLevel: ''
+  })
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -98,6 +106,60 @@ export default function AllStudentsPage() {
 
   const handlePageChange = (page: number) => {
     setPagination(prev => ({ ...prev, page }))
+  }
+
+  const handleEditStudent = (student: Student) => {
+    setEditingStudent(student)
+    setEditForm({
+      name: student.user.name,
+      email: student.user.email,
+      course: student.course,
+      yearLevel: student.yearLevel
+    })
+    setShowEditModal(true)
+  }
+
+  const handleEditFormChange = (field: string, value: string) => {
+    setEditForm(prev => ({ ...prev, [field]: value }))
+  }
+
+  const handleUpdateStudent = async () => {
+    if (!editingStudent) return
+
+    try {
+      const response = await fetch('/api/student', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          studentId: editingStudent.studentId,
+          name: editForm.name,
+          email: editForm.email,
+          course: editForm.course,
+          yearLevel: editForm.yearLevel
+        })
+      })
+
+      if (response.ok) {
+        toast.success('Student updated successfully')
+        setShowEditModal(false)
+        setEditingStudent(null)
+        fetchStudents() // Refresh the list
+      } else {
+        const error = await response.json()
+        toast.error(error.message || 'Failed to update student')
+      }
+    } catch (error) {
+      console.error('Error updating student:', error)
+      toast.error('Error updating student')
+    }
+  }
+
+  const closeEditModal = () => {
+    setShowEditModal(false)
+    setEditingStudent(null)
+    setEditForm({ name: '', email: '', course: '', yearLevel: '' })
   }
 
   const exportStudents = async () => {
@@ -356,6 +418,13 @@ export default function AllStudentsPage() {
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                             <div className="flex space-x-2">
                               <button
+                                onClick={() => handleEditStudent(student)}
+                                className="text-blue-600 hover:text-blue-900"
+                                title="Edit Student"
+                              >
+                                <Edit className="w-4 h-4" />
+                              </button>
+                              <button
                                 onClick={() => viewQRCode(student)}
                                 className="text-primary-600 hover:text-primary-900"
                                 title="View QR Code"
@@ -437,6 +506,110 @@ export default function AllStudentsPage() {
               <div className="text-xs text-gray-500">
                 QR Code Value: {selectedStudent.qrCodeValue}
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Student Modal */}
+      {showEditModal && editingStudent && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900">
+                Edit Student
+              </h3>
+              <button 
+                onClick={closeEditModal}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="p-6 space-y-4">
+              <div>
+                <label htmlFor="edit-name" className="block text-sm font-medium text-gray-700 mb-1">
+                  Full Name
+                </label>
+                <input
+                  type="text"
+                  id="edit-name"
+                  value={editForm.name}
+                  onChange={(e) => handleEditFormChange('name', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="edit-email" className="block text-sm font-medium text-gray-700 mb-1">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  id="edit-email"
+                  value={editForm.email}
+                  onChange={(e) => handleEditFormChange('email', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="edit-course" className="block text-sm font-medium text-gray-700 mb-1">
+                  Course
+                </label>
+                <select
+                  id="edit-course"
+                  value={editForm.course}
+                  onChange={(e) => handleEditFormChange('course', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                >
+                  <option value="">Select Course</option>
+                  <option value="BEED">Bachelor of Elementary Education (BEED)</option>
+                  <option value="BSED">Bachelor of Secondary Education (BSED)</option>
+                  <option value="BSIT">Bachelor of Science in Information Technology (BSIT)</option>
+                  <option value="BSBA">Bachelor of Science in Business Administration (BSBA)</option>
+                  <option value="BSHM">Bachelor of Science in Hospitality Management (BSHM)</option>
+                  <option value="BSCS">Bachelor of Science in Computer Science (BSCS)</option>
+                  <option value="BSA">Bachelor of Science in Accountancy (BSA)</option>
+                  <option value="BSN">Bachelor of Science in Nursing (BSN)</option>
+                  <option value="BSPSYCH">Bachelor of Science in Psychology (BSPSYCH)</option>
+                  <option value="BSA">Bachelor of Science in Agriculture (BSA)</option>
+                </select>
+              </div>
+
+              <div>
+                <label htmlFor="edit-year" className="block text-sm font-medium text-gray-700 mb-1">
+                  Year Level
+                </label>
+                <select
+                  id="edit-year"
+                  value={editForm.yearLevel}
+                  onChange={(e) => handleEditFormChange('yearLevel', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                >
+                  <option value="">Select Year Level</option>
+                  <option value="1">1st Year</option>
+                  <option value="2">2nd Year</option>
+                  <option value="3">3rd Year</option>
+                  <option value="4">4th Year</option>
+                </select>
+              </div>
+            </div>
+            
+            <div className="flex justify-end space-x-3 p-6 border-t border-gray-200">
+              <button
+                onClick={closeEditModal}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors duration-200"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleUpdateStudent}
+                className="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-md transition-colors duration-200"
+              >
+                Update Student
+              </button>
             </div>
           </div>
         </div>
