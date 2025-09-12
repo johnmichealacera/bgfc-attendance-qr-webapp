@@ -39,9 +39,9 @@ export async function POST(request: NextRequest) {
     const currentHour = currentTime.getHours()
 
     // Determine if this should be MORNING or AFTERNOON based on current time
-    // Morning: 6:00 AM - 12:00 PM (6-11), Afternoon: 12:00 PM - 6:00 PM (12-17)
+    // Morning: 6:00 AM - 12:00 PM (6-11), Afternoon: 12:00 PM - 10:00 PM (12-22)
     const isMorning = currentHour >= 6 && currentHour < 12
-    const isAfternoon = currentHour >= 12 && currentHour < 18
+    const isAfternoon = currentHour >= 12 && currentHour < 22
     
     if (!isMorning && !isAfternoon) {
       return NextResponse.json({ 
