@@ -22,36 +22,22 @@ interface SessionConfig {
 
 const SESSION_CONFIGS: SessionConfig[] = [
   {
-    type: 'MORNING_IN',
-    label: 'Morning In',
+    type: 'MORNING',
+    label: 'Morning Session',
     icon: Sun,
     color: 'bg-yellow-500',
-    timeRange: '6:00 AM - 8:00 AM'
+    timeRange: '6:00 AM - 12:30 PM'
   },
   {
-    type: 'MORNING_OUT',
-    label: 'Morning Out',
-    icon: Sun,
-    color: 'bg-orange-500',
-    timeRange: '11:30 AM - 12:30 PM'
-  },
-  {
-    type: 'AFTERNOON_IN',
-    label: 'Afternoon In',
+    type: 'AFTERNOON',
+    label: 'Afternoon Session',
     icon: Moon,
     color: 'bg-blue-500',
-    timeRange: '12:30 PM - 2:00 PM'
-  },
-  {
-    type: 'AFTERNOON_OUT',
-    label: 'Afternoon Out',
-    icon: Moon,
-    color: 'bg-indigo-500',
-    timeRange: '4:30 PM - 6:00 PM'
+    timeRange: '12:30 PM - 6:00 PM'
   }
 ]
 
-export default function QRScanner({ onScan, gateLocation = 'Main Gate', sessionType = 'MORNING_IN' }: QRScannerProps) {
+export default function QRScanner({ onScan, gateLocation = 'Main Gate', sessionType = 'MORNING' }: QRScannerProps) {
   const [isScanning, setIsScanning] = useState(false)
   const [scannedData, setScannedData] = useState('')
   const [manualInput, setManualInput] = useState('')
@@ -207,8 +193,11 @@ export default function QRScanner({ onScan, gateLocation = 'Main Gate', sessionT
       {/* Session Configuration */}
       <div className="mb-6 bg-white rounded-lg shadow-sm p-4 border border-gray-200">
         <h3 className="text-lg font-semibold text-gray-900 mb-3">Session Configuration</h3>
+        <p className="text-sm text-gray-600 mb-4">
+          Select a session and scan student QR codes. The system will automatically determine if it's time in or time out.
+        </p>
         
-        <div className="grid grid-cols-2 gap-2 mb-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-4">
           {SESSION_CONFIGS.map((config) => (
             <button
               key={config.type}

@@ -41,32 +41,18 @@ interface SessionConfig {
 
 const SESSION_CONFIGS: SessionConfig[] = [
   {
-    type: 'MORNING_IN',
-    label: 'Morning In',
+    type: 'MORNING',
+    label: 'Morning Session',
     icon: Sun,
     color: 'bg-yellow-500',
-    timeRange: '6:00 AM - 8:00 AM'
+    timeRange: '6:00 AM - 12:30 PM'
   },
   {
-    type: 'MORNING_OUT',
-    label: 'Morning Out',
-    icon: Sun,
-    color: 'bg-orange-500',
-    timeRange: '11:30 AM - 12:30 PM'
-  },
-  {
-    type: 'AFTERNOON_IN',
-    label: 'Afternoon In',
+    type: 'AFTERNOON',
+    label: 'Afternoon Session',
     icon: Moon,
     color: 'bg-blue-500',
-    timeRange: '12:30 PM - 2:00 PM'
-  },
-  {
-    type: 'AFTERNOON_OUT',
-    label: 'Afternoon Out',
-    icon: Moon,
-    color: 'bg-indigo-500',
-    timeRange: '4:30 PM - 6:00 PM'
+    timeRange: '12:30 PM - 6:00 PM'
   }
 ]
 
@@ -74,7 +60,7 @@ export default function EnhancedQRScanner() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const [isScanning, setIsScanning] = useState(false)
-  const [selectedSession, setSelectedSession] = useState<string>('MORNING_IN')
+  const [selectedSession, setSelectedSession] = useState<string>('MORNING')
   const [gateLocation, setGateLocation] = useState<string>('Main Gate')
   const [scanResult, setScanResult] = useState<ScanResult | null>(null)
   const [recentScans, setRecentScans] = useState<ScanResult[]>([])
@@ -266,15 +252,18 @@ export default function EnhancedQRScanner() {
             Enhanced QR Attendance Scanner
           </h1>
           <p className="text-xl text-gray-600">
-            Track morning and afternoon sessions with time in/out functionality
+            Track morning and afternoon sessions with automatic time in/out detection
           </p>
         </div>
 
         {/* Session Selection */}
         <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
           <h2 className="text-2xl font-semibold text-gray-900 mb-4">Session Configuration</h2>
+          <p className="text-gray-600 mb-4">
+            Select a session and scan student QR codes. The system will automatically determine if it's time in or time out based on existing attendance records.
+          </p>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             {SESSION_CONFIGS.map((config) => (
               <button
                 key={config.type}
