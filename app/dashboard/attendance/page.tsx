@@ -139,10 +139,10 @@ export default function AttendancePage() {
             record.course,
             record.yearLevel,
             record.date,
-            record.MORNING_IN ? new Date(record.MORNING_IN.timestamp).toLocaleTimeString() : '',
-            record.MORNING_OUT ? new Date(record.MORNING_OUT.timestamp).toLocaleTimeString() : '',
-            record.AFTERNOON_IN ? new Date(record.AFTERNOON_IN.timestamp).toLocaleTimeString() : '',
-            record.AFTERNOON_OUT ? new Date(record.AFTERNOON_OUT.timestamp).toLocaleTimeString() : '',
+            record.MORNING_IN ? format12HourShort(record.MORNING_IN.timestamp) : '',
+            record.MORNING_OUT ? format12HourShort(record.MORNING_OUT.timestamp) : '',
+            record.AFTERNOON_IN ? format12HourShort(record.AFTERNOON_IN.timestamp) : '',
+            record.AFTERNOON_OUT ? format12HourShort(record.AFTERNOON_OUT.timestamp) : '',
           ])
         ].map(row => row.map((field: any) => `"${field}"`).join(',')).join('\n')
 
@@ -164,6 +164,18 @@ export default function AttendancePage() {
       toast.error('Error exporting attendance')
     }
   }
+
+  const format12HourShort = (isoString: string) => {
+    // Example input: "2025-09-12T17:51:48.000Z"
+    const timePart = isoString.split("T")[1]; // "17:51:48.000Z"
+    const [hourStr, minuteStr] = timePart.split(":"); // ["17", "51", "48.000Z"]
+  
+    let hours = parseInt(hourStr, 10);
+    const ampm = hours >= 12 ? "PM" : "AM";
+    hours = hours % 12 || 12;
+  
+    return `${hours}:${minuteStr} ${ampm}`;
+  };
 
   if (status === 'loading') {
     return (
@@ -366,7 +378,7 @@ export default function AttendancePage() {
                                 <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
                                 <Clock className="w-4 h-4 text-green-500 mr-2" />
                                 <span className="text-sm text-gray-900">
-                                  {new Date(record.MORNING_IN.timestamp).toLocaleTimeString()}
+                                  {format12HourShort(record.MORNING_IN.timestamp)}
                                 </span>
                               </div>
                             ) : (
@@ -379,7 +391,7 @@ export default function AttendancePage() {
                                 <div className="w-2 h-2 bg-orange-500 rounded-full mr-2"></div>
                                 <Clock className="w-4 h-4 text-orange-500 mr-2" />
                                 <span className="text-sm text-gray-900">
-                                  {new Date(record.MORNING_OUT.timestamp).toLocaleTimeString()}
+                                  {format12HourShort(record.MORNING_OUT.timestamp)}
                                 </span>
                               </div>
                             ) : (
@@ -392,7 +404,7 @@ export default function AttendancePage() {
                                 <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
                                 <Clock className="w-4 h-4 text-blue-500 mr-2" />
                                 <span className="text-sm text-gray-900">
-                                  {new Date(record.AFTERNOON_IN.timestamp).toLocaleTimeString()}
+                                  {format12HourShort(record.AFTERNOON_IN.timestamp)}
                                 </span>
                               </div>
                             ) : (
@@ -405,7 +417,7 @@ export default function AttendancePage() {
                                 <div className="w-2 h-2 bg-indigo-500 rounded-full mr-2"></div>
                                 <Clock className="w-4 h-4 text-indigo-500 mr-2" />
                                 <span className="text-sm text-gray-900">
-                                  {new Date(record.AFTERNOON_OUT.timestamp).toLocaleTimeString()}
+                                  {format12HourShort(record.AFTERNOON_OUT.timestamp)}
                                 </span>
                               </div>
                             ) : (

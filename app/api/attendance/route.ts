@@ -260,7 +260,7 @@ export async function GET(request: NextRequest) {
           studentEmail: record.student.user.email,
           course: record.student.course,
           yearLevel: record.student.yearLevel,
-          date: record.sessionDate.toISOString().split('T')[0],
+          date: record.sessionDate,
           MORNING_IN: null,
           MORNING_OUT: null,
           AFTERNOON_IN: null,
